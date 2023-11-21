@@ -71,24 +71,25 @@ EM_algorithm_censored <- function(ind, data, d, N, parameter_starts, tol){
       theta22 <- 1/rate1
       pi1 <- pi2
       pi2 <- p_helper
+      posterior <- cbind(tau2, tau1)
     }else{
       theta21 <- 1/rate1
       theta22 <- 1/rate2
+      posterior <- cbind(tau1, tau2)
     } 
-    return(data.frame(pi1 = pi1, pi2 = pi2, theta21 = theta21, theta22 = theta22, 
-                      loglik = loglik[k], iteration = k-1, 
-                      message = "convergent"))
+    return(list(results = data.frame(pi1 = pi1, pi2 = pi2, theta21 = theta21, theta22 = theta22, 
+                      loglik = loglik[k], iteration = k-1, censored_rate = 1-sum(d)/length(d), 
+                      message = "convergent"), posterior = posterior))
   }else{
-    return(data.frame(pi1 = NA, pi2 = NA, theta21 = NA, theta22 = NA, 
-                      loglik = NA, iteration = k-1, 
-                      message = "not convergent"))
+    return(list(results = data.frame(pi1 = NA, pi2 = NA, theta21 = NA, theta22 = NA, 
+                      loglik = NA, iteration = k-1, censored_rate = 1-sum(d)/length(d), 
+                      message = "not convergent"), posterior = NA))
   }
 }
 
 
 
-EM_algorithm_interval <- function(ind, data , N, 
-                                           delta , d, parameter_starts, q2, tol){
+EM_algorithm_interval <- function(ind, data , N, delta , d, parameter_starts, q2, tol){
   omega1 <- parameter_starts[ind, 1]
   omega2 <-  1 - omega1
   p1 <- 1 - exp(-delta/parameter_starts[ind, 2])
@@ -130,14 +131,18 @@ EM_algorithm_interval <- function(ind, data , N,
       theta22 <- -delta/log(1 - p1)
       omega1 <- omega2
       omega2 <- p_helper
+      posterior <- cbind(tau2, tau1)
     }else{
       theta21 <- -delta/log(1 - p1)
       theta22 <- -delta/log(1 - p2)
+      posterior <- cbind(tau1, tau2)
     } 
-    return(data.frame(ind = ind, prob1 = omega1, prob2 = omega2, theta21 = theta21, theta22 = theta22, 
-                      loglik = loglik[k], iteration = k-1, message = "convergent"))
+    return(list(results = data.frame(ind = ind, prob1 = omega1, prob2 = omega2, theta21 = theta21, theta22 = theta22, 
+                      loglik = loglik[k], iteration = k-1, censored_rate = 1-sum(d)/length(d), message = "convergent"),
+                posterior = posterior))
   }else{
-    return(data.frame(ind = ind, prob1 = NA, prob2 = NA, theta21 = NA, theta22 = NA, 
-                      loglik = NA, iteration = k-1, message = "not convergent"))
+    return(list(results = data.frame(ind = ind, prob1 = NA, prob2 = NA, theta21 = NA, theta22 = NA, 
+                      loglik = NA, iteration = k-1, censored_rate = 1-sum(d)/length(d), message = "not convergent"),
+                posterior = NA))
   }
 }
