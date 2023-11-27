@@ -3,7 +3,7 @@
 CIhSSALT <- function( data , n , censoring = 1 , tau , r=NULL, monitoring = "continuous" ,
                           delta = NULL, CImethod = "asymptotic" , alpha = 0.05 , B = 1000 , theta1,
                           theta21 , theta22 , p , maxit=1000, tol=1e-8, language ="CPP", parallel=FALSE, ncores=2){
-  
+
   ### Part 1: Check Validity of Given Input
   ###Check the input of parameter n
   if (missing(n)) {
@@ -46,15 +46,15 @@ CIhSSALT <- function( data , n , censoring = 1 , tau , r=NULL, monitoring = "con
   ###Check the input of parameter monitoring
   if (!monitoring %in% c("continuous", "interval")){
     monitoring <- "continuous"
-    warning("Invalid argument 'monitoring'! monitoring is 'continuous' or 'interval'. 
+    warning("Invalid argument 'monitoring'! monitoring is 'continuous' or 'interval'.
             monitoring = 'continuous' is used instead")
   }
   ######The following check is newly added.
   if ((monitoring == "continuous") + (!is.null(delta))  == 2){
     warning("Conflict in argument 'monitoring' and delta'! monitoring = 'continuous' is used instead")
   }
-  if ((monitoring == "interval")){ 
-    
+  if ((monitoring == "interval")){
+
     if(censoring == 2){
       stop("Error: interval monitoring is only valid for type 1 censoring.")
     }
@@ -66,14 +66,14 @@ CIhSSALT <- function( data , n , censoring = 1 , tau , r=NULL, monitoring = "con
       stop("Invalid argument 'delta'! The value of 'delta' should be a positive number")
     }
     if (any((tau/delta) %% 1 != 0)) {
-      stop("Invalid argument 'delta'! Only equally-spaced inspection is supported. 
+      stop("Invalid argument 'delta'! Only equally-spaced inspection is supported.
            The value of 'delta' should be divisible by tau")
     }
     if (!(is.integer(data))){
       stop("Error: interval monitoring is only valid for count data.")
     }
   }
-  
+
   ###Check the input of parameter theta21
   if (missing(theta21)) {
     stop("Error: Missing theta21")
@@ -91,31 +91,31 @@ CIhSSALT <- function( data , n , censoring = 1 , tau , r=NULL, monitoring = "con
   if (any(theta22 < 0)) {
     stop("Invalid argument 'theta22'! The value of 'theta22' should be a positive vector")
   }
-  
+
   if (missing(p)) {
     stop("Error: Missing p")
   }
   if (any(p < 0, p > 1)) {
     stop("Invalid argument 'p'! The value of 'p' should be a positive vector with entries <= 1")
   }
-  
+
   if (!(length(p)==length(theta21) && length(theta21)==length(theta22))){
     stop("Argmunts 'p', 'thet21' and 'theta22' must be of the same length")
   }
-  
+
   if(any(c(length(p),length(theta21),length(theta22)) >1)){
     warning("Vector for initial values detected, the entries which return the largest log-likelihood are selected as the MLE")
   }
-  
+
   if (tol < 0 || !is.numeric(tol)) {
     stop("Invalid argument 'tol'! The value of 'tol' should be a positive number")
   }
-  
-  
+
+
   if (maxit < 0 || !is.numeric(maxit)) {
     stop("Invalid argument 'maxit'! The value of 'maxit' should be a positive number")
   }
-  
+
   if (ncores < 0 || !is.numeric(ncores)) {
     stop("Invalid argument 'ncores'! The value of 'ncores' should be a positive integer")
   }
@@ -123,27 +123,27 @@ CIhSSALT <- function( data , n , censoring = 1 , tau , r=NULL, monitoring = "con
     ncores = parallel::detectCores()
     warning(paste0("System has less cores. 'ncores' is set to ", ncores))
   }
-  
+
   if (!is.logical(parallel)){
     stop("Invalid argument 'parallel'! The value of 'parallel' should be a boolean")
   }
-  
+
   if (!is.logical(parallel)){
     stop("Invalid argument 'parallel'! The value of 'parallel' should be a boolean")
   }
-  
+
   if (!language %in% c("CPP", "R")){
     language <- "CPP"
-    warning("Invalid argument 'language'! language is 'CPP' or 'R'. 
+    warning("Invalid argument 'language'! language is 'CPP' or 'R'.
             language = 'CPP' is used instead")
   }
-  
+
   if (any(alpha < 0, alpha > 1)) {
     stop("Invalid argument 'alpha'! The value of 'alpha' should be a in range (0,1)")
   }
-  
-  
-  
+
+
+
   ###Check the input of parameter CImethod
   if(!(CImethod=="asymptotic" || CImethod=="percentile" || CImethod=="bca") ){
     CImethod <- "asymptotic"
@@ -155,11 +155,11 @@ CIhSSALT <- function( data , n , censoring = 1 , tau , r=NULL, monitoring = "con
     CIsay_hSSALT( data, n, censoring, tau , r, monitoring, delta, alpha, theta1, p, theta21, theta22  )
   }else{
     if(CImethod == "percentile"){
-      CIbs_hSSALT( data , n , censoring , tau, r , monitoring , delta , alpha , B,
+      CIbs_hSSALT( data , n , censoring , tau, r , monitoring , delta , alpha , B, theta1,
                    theta21 , theta22 , p , maxit , tol , language , parallel , ncores )
     }else{
       CIbca_hSSALT( data , n , censoring , tau , r, monitoring , alpha , B,
-                    theta21 , theta22 , p , maxit , tol , language , parallel , ncores )
+                    theta1, theta21 , theta22 , p , maxit , tol , language , parallel , ncores )
     }
   }
 }
