@@ -32,19 +32,19 @@ EM_algorithm_censored <- function(ind, data, d, N, parameter_starts, tol){
   pi2 <-  1 - pi1
   rate1 <- 1/parameter_starts[ind, 2]
   rate2 <- 1/parameter_starts[ind, 3]
-  
+
   # print("outside")
   # print(c(pi1,pi2,rate1,rate2))
-  
-  
- 
+
+
+
   loglik<- rep(NA, N)
   loglik[1]<-0
   loglik[2]<-mysum(pi1*(log(pi1) + d*log(dexp(data, rate1)) + (1-d)*log(1-pexp(data, rate1))))+
     mysum(pi2*(log(pi2) + d*log(dexp(data, rate2))+ (1-d)*log(1-pexp(data, rate2))))
-  
+
   k<-2
-  
+
   # loop
   while((abs(loglik[k]-loglik[k-1]) >= tol) && (k <= N)) {
     # E step
@@ -52,14 +52,14 @@ EM_algorithm_censored <- function(ind, data, d, N, parameter_starts, tol){
     sum.of.comps2 <- pi1*(1-pexp(data, rate1))+pi2*(1-pexp(data, rate2))
     tau1 <- (pi1*dexp(data, rate1)/sum.of.comps1)^d*(pi1*(1-pexp(data, rate1))/sum.of.comps2)^(1-d)
     tau2 <- (pi2*dexp(data, rate2)/sum.of.comps1)^d*(pi2*(1-pexp(data, rate2))/sum.of.comps2)^(1-d)
-    
+
     # M step
     pi1<-mysum(tau1)/length(data)
     pi2<-mysum(tau2)/length(data)
-    
+
     rate1 <- mysum(tau1*d)/mysum(tau1*data)
     rate2 <- mysum(tau2*d)/mysum(tau2*data)
-    
+
     loglik[k+1]<- mysum(tau1*(log(pi1)+d*log(dexp(data, rate1)) + (1-d)*log(1-pexp(data, rate1))))+
       mysum(tau2*(log(pi2)+d*log(dexp(data, rate2))+ (1-d)*log(1-pexp(data, rate2))))
     k<-k+1
@@ -76,13 +76,13 @@ EM_algorithm_censored <- function(ind, data, d, N, parameter_starts, tol){
       theta21 <- 1/rate1
       theta22 <- 1/rate2
       posterior <- cbind(tau1, tau2)
-    } 
-    return(list(results = data.frame(pi1 = pi1, pi2 = pi2, theta21 = theta21, theta22 = theta22, 
-                      loglik = loglik[k], iteration = k-1, censored_rate = 1-sum(d)/length(d), 
+    }
+    return(list(results = data.frame(pi1 = pi1, pi2 = pi2, theta21 = theta21, theta22 = theta22,
+                      loglik = loglik[k], iteration = k-1,
                       message = "convergent"), posterior = posterior))
   }else{
-    return(list(results = data.frame(pi1 = NA, pi2 = NA, theta21 = NA, theta22 = NA, 
-                      loglik = NA, iteration = k-1, censored_rate = 1-sum(d)/length(d), 
+    return(list(results = data.frame(pi1 = NA, pi2 = NA, theta21 = NA, theta22 = NA,
+                      loglik = NA, iteration = k-1,
                       message = "not convergent"), posterior = NA))
   }
 }
@@ -101,9 +101,9 @@ EM_algorithm_interval <- function(ind, data , N, delta , d, parameter_starts, q2
   loglik[1]<-0
   loglik[2]<-mysum(omega1*(log(omega1)+d*log(dgeom(data, p1))+(1-d)*log(1-pgeom(data, p1))))+
     mysum(omega2*(log(omega2)+log(dgeom(data, p2))+(1-d)*log(1-pgeom(data, p2))))
-  
+
   k<-2
-  
+
   # loop
   while((abs(loglik[k]-loglik[k-1]) >= tol) & (k <= N)) {
     # E step
@@ -111,17 +111,17 @@ EM_algorithm_interval <- function(ind, data , N, delta , d, parameter_starts, q2
     sum.of.comps2 <- omega1*(1-pgeom(data, p1))+omega2*(1-pgeom(data, p2))
     tau1 <- (omega1*dgeom(data, p1)/sum.of.comps1)^d*(omega1*(1-pgeom(data, p1))/sum.of.comps2)^(1-d)
     tau2 <- (omega2*dgeom(data, p2)/sum.of.comps1)^d*(omega2*(1-pgeom(data, p2))/sum.of.comps2)^(1-d)
-    
+
     # M step
     omega1 <- mysum(tau1)/mysum(tau1 + tau2)
     omega2 <- mysum(tau2)/mysum(tau1 + tau2)
-    
+
     p1 <- mysum(tau1*d)/mysum(tau1*(d*(data+1) + (1-d)*q2))
     p2 <- mysum(tau2*d)/mysum(tau2*(d*(data+1) + (1-d)*q2))
-    
+
     loglik[k+1]<-mysum(tau1*(log(omega1)+d*log(dgeom(data, p1)) + (1-d)*log(1-pgeom(data, p1))))+
       mysum(tau2*(log(omega2)+d*log(dgeom(data, p2))+ (1-d)*log(1-pgeom(data, p2))))
-    
+
     k<-k+1
   }
   if(k <= N){
@@ -136,13 +136,13 @@ EM_algorithm_interval <- function(ind, data , N, delta , d, parameter_starts, q2
       theta21 <- -delta/log(1 - p1)
       theta22 <- -delta/log(1 - p2)
       posterior <- cbind(tau1, tau2)
-    } 
-    return(list(results = data.frame(ind = ind, prob1 = omega1, prob2 = omega2, theta21 = theta21, theta22 = theta22, 
-                      loglik = loglik[k], iteration = k-1, censored_rate = 1-sum(d)/length(d), message = "convergent"),
+    }
+    return(list(results = data.frame(ind = ind, prob1 = omega1, prob2 = omega2, theta21 = theta21, theta22 = theta22,
+                      loglik = loglik[k], iteration = k-1, message = "convergent"),
                 posterior = posterior))
   }else{
-    return(list(results = data.frame(ind = ind, prob1 = NA, prob2 = NA, theta21 = NA, theta22 = NA, 
-                      loglik = NA, iteration = k-1, censored_rate = 1-sum(d)/length(d), message = "not convergent"),
+    return(list(results = data.frame(ind = ind, prob1 = NA, prob2 = NA, theta21 = NA, theta22 = NA,
+                      loglik = NA, iteration = k-1, message = "not convergent"),
                 posterior = NA))
   }
 }

@@ -12,7 +12,7 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::depends(BH)]]
 
-// [[Rcpp::export]] 
-Rcpp::DataFrame EM_algorithm_interval_arma(const arma::vec& data, const double& delta, const double& ind, const arma::vec& d, const Rcpp::DataFrame& parameter_starts, const double& q2, const int& N, const double& tol);
+// [[Rcpp::export]]
+Rcpp::List EM_algorithm_interval_arma(const arma::vec& data, const double& delta, const double& ind, const arma::vec& d, const Rcpp::DataFrame& parameter_starts, const double& q2, const int& N, const double& tol);
 
 #endif

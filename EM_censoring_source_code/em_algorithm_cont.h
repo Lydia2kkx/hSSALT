@@ -12,7 +12,7 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::depends(BH)]]
 
-// [[Rcpp::export]] 
-Rcpp::DataFrame EM_algorithm_censored_arma(const arma::vec& data, const double& ind, const arma::vec& d, const Rcpp::DataFrame& parameter_starts, const int& N, const double& tol);
+// [[Rcpp::export]]
+Rcpp::List EM_algorithm_censored_arma(const arma::vec& data, const double& ind, const arma::vec& d, const Rcpp::DataFrame& parameter_starts, const int& N, const double& tol);
 
 #endif
