@@ -33,8 +33,7 @@ EM_algorithm_censored <- function(ind, data, d, N, parameter_starts, tol){
   rate1 <- 1/parameter_starts[ind, 2]
   rate2 <- 1/parameter_starts[ind, 3]
 
-  # print("outside")
-  # print(c(pi1,pi2,rate1,rate2))
+
 
 
 
@@ -137,11 +136,11 @@ EM_algorithm_interval <- function(ind, data , N, delta , d, parameter_starts, q2
       theta22 <- -delta/log(1 - p2)
       posterior <- cbind(tau1, tau2)
     }
-    return(list(results = data.frame(ind = ind, prob1 = omega1, prob2 = omega2, theta21 = theta21, theta22 = theta22,
+    return(list(results = data.frame(ind = ind, p1 = omega1, p2 = omega2, theta21 = theta21, theta22 = theta22,
                       loglik = loglik[k], iteration = k-1, message = "convergent"),
                 posterior = posterior))
   }else{
-    return(list(results = data.frame(ind = ind, prob1 = NA, prob2 = NA, theta21 = NA, theta22 = NA,
+    return(list(results = data.frame(ind = ind, p1 = NA, p2 = NA, theta21 = NA, theta22 = NA,
                       loglik = NA, iteration = k-1, message = "not convergent"),
                 posterior = NA))
   }
