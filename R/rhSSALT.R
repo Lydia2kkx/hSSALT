@@ -120,9 +120,9 @@ rhSSALT <- function(n, censoring = 1, tau, r = NULL, monitoring = "continuous", 
       return(list(Censored_dat = Simu_T_Censored, Censored_num_level = c(n1, length(Simu_T_Censored) - n1), 
                   Full_dat = Simu_T, Full_num_level = c(n1, n-n1)))
     }else{
-      Simu_njs <- table_factor_cpp(cut(Simu_T, breaks = seq(0, ceiling(max(Simu_T)*2)/2, delta)))
-      Simu_njs_Censored <- table_factor_cpp(cut(Simu_T_Censored, breaks = seq(0, tau[2], delta)))
-      return(list(Censored_dat = Simu_njs_Censored, Censored_num_level = c(n1, length(Simu_njs_Censored) - n1), 
+      Simu_njs <- table(cut(Simu_T, breaks = seq(0, ceiling(max(Simu_T)/delta)*delta, delta)))
+      Simu_njs_Censored <- table(cut(Simu_T_Censored, breaks = seq(0, tau[2], delta)))
+      return(list(Censored_dat = Simu_njs_Censored, Censored_num_level = c(n1, sum(Simu_njs_Censored) - n1), 
                   Full_dat = Simu_njs, Full_num_level = c(n1, n-n1)))
     }
   }else{
