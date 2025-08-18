@@ -13,7 +13,6 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
     n1j <- data[1:q1]
     n1 <- sum(n1j)
     
-    
     ### tau1j are the right bounds of intervals
     tau1j <- seq(delta, tau[1], delta)
     ### tau1j0 are the left bounds of intervals
@@ -32,70 +31,45 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
       if(q2 > length(n2j)){n2j <- c(n2j, rep(0, q2-length(n2j)))}
     }else{n2j <- data[-c((1:q1),((q1+q2+1):length(data)))]}
     
-    n2 <- sum(n2j)
-    
-    
-    A <- A_func(p = p, theta21 = theta21, theta22 = theta22, tau2j0, tau2j, tau1 = tau[1])
-    B <- B_func(p = p, theta21 = theta21, theta22 = theta22, tau1 = tau[1], tau2 = tau[2])
-    
-    nf <- n1+n2
-    O22 <- -Secondderivative_O22(p , theta21, theta22 , tau2j0 = tau2j0, tau2j = tau2j, n2j = n2j, nf = nf, tau1 = tau[1], tau2 = tau[2], A, B)
-    O23 <- -Secondderivative_O23(p , theta21, theta22 , tau2j0 = tau2j0, tau2j = tau2j, n2j = n2j, nf = nf, tau1 = tau[1], tau2 = tau[2], A, B)
-    O24 <- -Secondderivative_O24(p , theta21, theta22 , tau2j0 = tau2j0, tau2j = tau2j, n2j = n2j, nf = nf, tau1 = tau[1], tau2 = tau[2], A, B)
-    O33 <- -Secondderivative_O33(p , theta21, theta22 , tau2j0 = tau2j0, tau2j = tau2j, n2j = n2j, nf = nf, tau1 = tau[1], tau2 = tau[2], A, B)
-    O34 <- -Secondderivative_O34(p , theta21, theta22 , tau2j0 = tau2j0, tau2j = tau2j, n2j = n2j, nf = nf, tau1 = tau[1], tau2 = tau[2], A, B)
-    O44 <- -Secondderivative_O44(p , theta21, theta22 , tau2j0 = tau2j0, tau2j = tau2j, n2j = n2j, nf = nf, tau1 = tau[1], tau2 = tau[2], A, B)
-    
-    
+    Secondderivative_O11 <- function(theta1, tau1j, tau1j0, n1j, n1, tau1){
+      -2/(theta1^3)*sum(n1j*(tau1j0*exp(-tau1j0/theta1)-tau1j*exp(-tau1j/theta1))/(exp(-tau1j0/theta1)-exp(-tau1j/theta1))) + 
+        1/(theta1^2)*sum(n1j*((tau1j0/theta1)^2*exp(-tau1j0/theta1)-(tau1j/theta1)^2*exp(-tau1j/theta1))/(exp(-tau1j0/theta1)-exp(-tau1j/theta1)))-
+        1/(theta1^2)*sum(n1j*((tau1j0/theta1*exp(-tau1j0/theta1)-tau1j/theta1*exp(-tau1j/theta1))/(exp(-tau1j0/theta1)-exp(-tau1j/theta1)))^2)-
+        2*tau1*(n-n1)/(theta1^3)
+    }
     O11 <- -Secondderivative_O11(theta1 = theta1, tau1j, tau1j0, n1j, n1, tau1 = tau[1])
     V_theta1 <- 1/O11
     V_theta1
     
-    # alpha is the significant level 
+    # alpha is the significance level 
     theta1_approxCI_low <- theta1 - qnorm(1-alpha/2)*sqrt(V_theta1)
-    # theta1_approxCI_low #compare it to 0
+    theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
     theta1_approxCI_up <- theta1 + qnorm(1-alpha/2)*sqrt(V_theta1)
-    # theta1_approxCI_up
     
+    n2 <- sum(n2j)
+    nf <- n1+n2
     
-    ####Compute the inverse of the Fisher matrix and get the covariance matrix
-    CV_matrice <- solve(matrix(c(O22, O23, O24, O23, O33, O34, O24, O34, O44), nrow = 3, byrow = TRUE))
-    V_theta21 <- diag(CV_matrice)[1] 
-    V_theta22 <- diag(CV_matrice)[2] 
-    V_p <- diag(CV_matrice)[3] 
+    loglik_i_interval <- function(x){
+      theta21 <- x[1]
+      theta22 <- x[2]
+      p <- x[3]
+      
+      value1 <- p*(exp(-(tau2j0-tau[1])/theta21)-exp(-(tau2j-tau[1])/theta21))
+      value2 <- (1-p)*(exp(-(tau2j0-tau[1])/theta22)-exp(-(tau2j-tau[1])/theta22))
+      
+      sum(n2j*log(value1+value2)) +
+        (n-nf)*log(p*exp(-(tau[2]-tau[1])/theta21)+(1-p)*exp(-(tau[2]-tau[1])/theta22))
+      
+    }
     
-    theta21_approxCI_low <- theta21 - qnorm(1-alpha/2)*sqrt(V_theta21)
-    # theta21_approxCI_low #compare it to 0
-    theta21_approxCI_up <- theta21 + qnorm(1-alpha/2)*sqrt(V_theta21)
-
-    
-    theta22_approxCI_low <- theta22 - qnorm(1-alpha/2)*sqrt(V_theta22)
-    # theta22_approxCI_low #compare it to 0
-    theta22_approxCI_up <- theta22 + qnorm(1-alpha/2)*sqrt(V_theta22)
-    # theta22_approxCI_up
-    
-    p_approxCI_low <- p - qnorm(1-alpha/2)*sqrt(V_p)
-    # p_approxCI_low #compare it to 0 and 1!
-    p_approxCI_up <- p + qnorm(1-alpha/2)*sqrt(V_p)
-    # p_approxCI_up
-    
-    return(list(CI_theta_1 = c(theta1_approxCI_low, theta1_approxCI_up),
-                   CI_theta_21 = c(theta21_approxCI_low, theta21_approxCI_up), 
-                   CI_theta_22 = c(theta22_approxCI_low, theta22_approxCI_up),
-                   CI_theta_p = c(p_approxCI_low, p_approxCI_up)
-                   ))
-    
-    
-    
-    
+    x <- c(theta21,theta22,p)
+    hess <- numDeriv::hessian(func = loglik_i_interval, x = x)
+  
     
   }else{############ continuous ###############
     
-  
+    
     mle1 <- theta1
-    
-    
-    
     
     if(censoring==1){
       
@@ -106,18 +80,20 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         ###The case with a relatively large sample size (e.g., n = 50)
         ###High precision computation is needed
         library(Rmpfr)
-        set.seed(1234)  ### The data should also be newly simulated!!! Otherwise, different precision level causes problem
-        T1_simu <- mpfr(rexp(n, rate = 1/theta1), 256) # 64 can be increased
+        T1_simu <- mpfr(1, 256)*data
         n1 <- sum(T1_simu <= tau[1])
         T1 <- sort(T1_simu[T1_simu <= tau[1]])
         mle1 <- mpfr(sum(T1, (n-n1)*tau[1]) / n1, 256)
         
+        p1 <- 1 - exp(-tau[1]/mle1)
+        p2 <- exp(-tau[1]/mle1) * (1 - p*exp(-(tau[2]-tau[1])/theta21) - (1-p)*exp(-(tau[2]-tau[1])/theta22))
+        p3 <- 1 - p1 - p2
+        Cn <- 1/(1 - (1-p1)^n - (1-p2)^n + p3^n)
+        
         # add mle1, tau
         bias_part_Mpfr <- function(n){
           y <- 0
-          p1 <- 1 - exp(-tau[1]/mle1)
-          p2 <- exp(-tau[1]/mle1) * (1 - p*exp(-(tau[2]-tau[1])/theta21) - (1-p)*exp(-(tau[2]-tau[1])/theta22))
-          p3 <- 1 - p1 - p2
+          
           for (i in 1:(n-1)) {
             for (k in 0:i) {
               n <- mpfr(n, 256)
@@ -127,7 +103,7 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
               y <- y + re_ik
             }
           }
-          return(y)
+          return(y*Cn)
         }
         
         V1 <- mle1^2/n1
@@ -137,10 +113,11 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         ######Censored
         bias <- bias_part_Mpfr(n)
         
-        # alpha <- c(0.1, 0.05, 0.01)
-        theta1_approxCI_low <- mle1 - Cn * bias - qnorm(1-alpha/2)*sqrt(V1)
+        theta1_approxCI_low <- mle1 - bias - qnorm(1-alpha/2)*sqrt(V1)
         theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
-        theta1_approxCI_up <- mle1 - Cn * bias + qnorm(1-alpha/2)*sqrt(V1)
+        theta1_approxCI_low <- sapply(theta1_approxCI_low[1], asNumeric)
+        theta1_approxCI_up <- mle1 - bias + qnorm(1-alpha/2)*sqrt(V1)
+        theta1_approxCI_up <- sapply(theta1_approxCI_up[1], asNumeric)
         
         
       }else{
@@ -148,8 +125,6 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         T1 <- data[data<tau[1]]
         n1 <- length(T1)
         T2 <- data[data>=tau[1]]
-        
-        
         
         p1 <- 1 - exp(-tau[1]/mle1)
         p2 <- exp(-tau[1]/mle1) * (1 - p1*exp(-(tau[2]-tau[1])/theta21)  - (1-p1)*exp(-(tau[2]-tau[1])/theta22))
@@ -171,18 +146,11 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         }
         
         V1 <- mle1^2/n1
-        # V1
         
-        # alpha <- c(0.1, 0.05, 0.01)
         theta1_approxCI_low <- mle1 - Cn * bias_part(n) - qnorm(1-alpha/2) * sqrt(V1)
         theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
-        # theta1_approxCI_low 
         theta1_approxCI_up <- mle1 - Cn * bias_part(n) + qnorm(1-alpha/2) * sqrt(V1)
-        # theta1_approxCI_up
       }
-      
-      
-      
       
       
       ################# Theta21,22 p Type I
@@ -193,53 +161,25 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
       # p, theta21, theta22 are the estimates from the EM algorithm
       # Compute the elements in the hessian matrix
       
-      
       sample_dat_2nd <- data[data>=tau[1]]
       sample_dat_2nd <- sample_dat_2nd[sample_dat_2nd < tau[2]]
       
       n2 <- length(sample_dat_2nd)
+      n_f <- length(data[data<tau[2]])
       
-      Otheta21 <- O_theta21_I(sample_dat_2nd, p, theta21, theta22, n1, n2, tau1 = tau[1], tau2 = tau[2])
-      Otheta21theta22 <- O_theta21theta22_I(sample_dat_2nd, p, theta21, theta22, n1, n2, tau1 = tau[1], tau2 = tau[2])
-      Otheta21p <- O_theta21p_I(sample_dat_2nd, p, theta21, theta22, n1, n2, tau1 = tau[1], tau2 = tau[2])
-      Otheta22 <- O_theta22_I(sample_dat_2nd, p, theta21, theta22, n1, n2, tau1 = tau[1], tau2 = tau[2])
-      Otheta22p <- O_theta22p_I(sample_dat_2nd, p, theta21, theta22, n1, n2, tau1 = tau[1], tau2 = tau[2])
-      Op <- O_p_I(sample_dat_2nd, p, theta21, theta22, n1, n2, tau1 = tau[1], tau2 = tau[2])
-      
-      ###Get the inverse, the diagonal elements are the variances of the parameters 
-      CV_matrice <- solve(matrix(c(Otheta21, Otheta21theta22, Otheta21p, Otheta21theta22, 
-                                   Otheta22, Otheta22p, Otheta21p, Otheta22p, Op), nrow = 3, byrow = TRUE))
-      Vtheta21 <- diag(CV_matrice)[1] 
-      Vtheta22 <- diag(CV_matrice)[2] 
-      Vp <- diag(CV_matrice)[3] 
-      
-      ### alpha is the significant level
-      p_approxCI_low <- p1 - qnorm(1-alpha/2)*sqrt(Vp)
-      p_approxCI_low <- ifelse(p_approxCI_low < 0, 0L, p_approxCI_low) #compare it to 0 and 1!
-      # p_approxCI_low
-      p_approxCI_up <- p1 + qnorm(1-alpha/2)*sqrt(Vp)
-      # p_approxCI_up
+      loglik_i_cont <- function(x){
+        theta21 <- x[1]
+        theta22 <- x[2]
+        p <- x[3]
+        #d is the data
+        sum(log(p/theta21*exp(-(sample_dat_2nd-tau[1])/theta21)+(1-p)/theta22*exp(-(sample_dat_2nd-tau[1])/theta22))) +
+          (n-n_f)*log(p*exp(-(tau[2]-tau[1])/theta21)+(1-p)*exp(-(tau[2]-tau[1])/theta22))
+      }
+
+      x <- c(theta21,theta22,p)
+      hess <- numDeriv::hessian(func = loglik_i_cont, x = x)
       
       
-      theta21_approxCI_low <- theta21 - qnorm(1-alpha/2)*sqrt(Vtheta21)
-      theta21_approxCI_low <- ifelse(theta21_approxCI_low < 0, 0L, theta21_approxCI_low)
-      # theta21_approxCI_low
-      theta21_approxCI_up <- theta21 + qnorm(1-alpha/2)*sqrt(Vtheta21)
-      # theta21_approxCI_up
-      
-      theta22_approxCI_low <- theta22 - qnorm(1-alpha/2)*sqrt(Vtheta22)
-      theta22_approxCI_low <- ifelse(theta22_approxCI_low < 0, 0L, theta22_approxCI_low)
-      # theta22_approxCI_low
-      theta22_approxCI_up <- theta22 + qnorm(1-alpha/2)*sqrt(Vtheta22)
-      # theta22_approxCI_up
-     
-      
-      
-      
-      
-      
-      
-       
     }else{######## Type II ###########
       
       
@@ -248,8 +188,8 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         ###The case with a relatively large sample size (e.g., n = 50)
         ###High precision computation is needed
         library(Rmpfr)
-        set.seed(12345)   ### The data should also be newly simulated!!! Otherwise, different precision level causes problem
-        T1_simu <- mpfr(rexp(n, rate = 1/theta1), 256) # 256 can be increased
+        #T1_simu <- mpfr(rexp(n, rate = 1/theta1), 256) # 256 can be increased
+        T1_simu <- mpfr(1, 256)*data
         n1 <- sum(T1_simu <= tau)
         T1 <- sort(T1_simu[T1_simu <= tau])
         mle1 <- mpfr(sum(T1, (n-n1)*tau) / n1, 256)
@@ -273,48 +213,40 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         }
         
         V1 <- mle1^2/n1
-        V1
         
         bias <- bias_Mpfr_modify(mle1, n = mpfr(n, 256), r = r)  #n = mpfr(n, 512) when n = 200
-        # alpha <- c(0.1, 0.05, 0.01)
         theta1_approxCI_low <- mle1 - bias - qnorm(1-alpha/2)*sqrt(V1)
         theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
-        # theta1_approxCI_low  
+        theta1_approxCI_low <- sapply(theta1_approxCI_low[1], asNumeric)
         theta1_approxCI_up <- mle1 - bias + qnorm(1-alpha/2)*sqrt(V1)
-        # theta1_approxCI_up
+        theta1_approxCI_up <- sapply(theta1_approxCI_up[1], asNumeric)
       }else{
         
         T1 <- data[data<tau[1]]
         n1 <- length(T1)
-        # T2 <- data[data>=tau[1]]
-      
-      ####theta1
-      bias <- function(x, r){
-        y <- NULL
-        val1 <- 1 - exp(-tau/x)
-        p_j_sum <- pbinom(0, n, val1, lower.tail = FALSE) - pbinom(r-1, n, val1, lower.tail = FALSE)
-        for (j in 1:(r-1)) {
-          for (k in 0:j) {
-            c_jk <- (-1)^k / p_j_sum * choose(n, j) * choose(j, k) * exp(-tau*(n - j + k)/x)
-            tau_jk <- tau / j * (n - j + k)
-            re_jk <- c_jk *tau_jk
-            y <- c(y, re_jk)
+        
+        ####theta1
+        bias <- function(x, r){
+          y <- NULL
+          val1 <- 1 - exp(-tau/x)
+          p_j_sum <- pbinom(0, n, val1, lower.tail = FALSE) - pbinom(r-1, n, val1, lower.tail = FALSE)
+          for (j in 1:(r-1)) {
+            for (k in 0:j) {
+              c_jk <- (-1)^k / p_j_sum * choose(n, j) * choose(j, k) * exp(-tau*(n - j + k)/x)
+              tau_jk <- tau / j * (n - j + k)
+              re_jk <- c_jk *tau_jk
+              y <- c(y, re_jk)
+            }
           }
+          return(sum(y))
         }
-        return(sum(y))
-      }
-      
-      V1 <- mle1^2/n1
-      # V1
-      
-      # alpha <- c(0.1, 0.05, 0.01)
-      theta1_approxCI_low <- mle1-bias(mle1, r) - qnorm(1-alpha/2)*sqrt(V1)
-      theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
-      # theta1_approxCI_low 
-      theta1_approxCI_up <- mle1-bias(mle1, r) + qnorm(1-alpha/2)*sqrt(V1)
-      # theta1_approxCI_up
-      
-
+        
+        V1 <- mle1^2/n1
+        
+        theta1_approxCI_low <- mle1-bias(mle1, r) - qnorm(1-alpha/2)*sqrt(V1)
+        theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
+        theta1_approxCI_up <- mle1-bias(mle1, r) + qnorm(1-alpha/2)*sqrt(V1)
+        
       }
       
       
@@ -325,70 +257,56 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
       # tr is the rth ordered failure, we expect data to be ordered
       tr <- sample_dat_2nd[r-n1]
       sample_dat_2nd <- sample_dat_2nd[1:(r-n1)]
-
       
-      # p, theta21, theta22 are the estimates from the EM algorithm, inputted
+      loglik_ii_cont <- function(x){
+        theta21 <- x[1]
+        theta22 <- x[2]
+        p <- x[3]
+        sum(log(p/theta21*exp(-(sample_dat_2nd-tau)/theta21)+(1-p)/theta22*exp(-(sample_dat_2nd-tau)/theta22))) +
+          (n-r)*log(p*exp(-(max(sample_dat_2nd)-tau)/theta21)+(1-p)*exp(-(max(sample_dat_2nd)-tau)/theta22))
+      }
       
-      
-      
-      # Compute the elements in the hessien matrix
-      
-      
-      Otheta21 <- O_theta21_II(ti = sample_dat_2nd, p = p, theta21 = theta21, 
-                            theta22 = theta22, tr = tr, r = r, tau)
-      Otheta21theta22 <- O_theta21theta22_II(ti = sample_dat_2nd, p = p, theta21 = theta21, 
-                                          theta22 = theta22, tr = tr, r = r, tau)
-      Otheta21p <- O_theta21p_II(ti = sample_dat_2nd, p = p, theta21 = theta21, 
-                              theta22 = theta22, tr = tr, r = r, tau)
-      Otheta22 <- O_theta22_II(ti = sample_dat_2nd, p = p, theta21 = theta21, 
-                            theta22 = theta22, tr = tr, r = r, tau)
-      Otheta22p <-  O_theta22p_II(ti = sample_dat_2nd, p = p, theta21 = theta21, 
-                               theta22 = theta22, tr = tr, r = r, tau)
-      Op <- O_p_II(ti = sample_dat_2nd, p = p, theta21 = theta21, 
-                theta22 = theta22, tr = tr, r = r, tau)
-      
-      ###Get the inverse, the diagonal elements are the variances of the parameters 
-      CV_matrice <- solve(matrix(c(Otheta21, Otheta21theta22, Otheta21p, Otheta21theta22, 
-                                   Otheta22, Otheta22p, Otheta21p, Otheta22p, Op), nrow = 3, byrow = TRUE))
-      Vtheta21 <- diag(CV_matrice)[1] 
-      Vtheta22 <- diag(CV_matrice)[2] 
-      Vp <- diag(CV_matrice)[3] 
-      
-      ### alpha is the significant level
-      p_approxCI_low <- p - qnorm(1-alpha/2)*sqrt(Vp)
-      p_approxCI_low <- ifelse(p_approxCI_low < 0, 0L, p_approxCI_low) #compare it to 0 and 1!
-      p_approxCI_low
-      p_approxCI_up <- p + qnorm(1-alpha/2)*sqrt(Vp)
-      p_approxCI_up
-      
-      
-      theta21_approxCI_low <- theta21 - qnorm(1-alpha/2)*sqrt(Vtheta21)
-      theta21_approxCI_low <- ifelse(theta21_approxCI_low < 0, 0L, theta21_approxCI_low)
-      theta21_approxCI_low
-      theta21_approxCI_up <- theta21 + qnorm(1-alpha/2)*sqrt(Vtheta21)
-      theta21_approxCI_up
-      
-      theta22_approxCI_low <- theta22 - qnorm(1-alpha/2)*sqrt(Vtheta22)
-      theta22_approxCI_low <- ifelse(theta22_approxCI_low < 0, 0L, theta22_approxCI_low)
-      theta22_approxCI_low
-      theta22_approxCI_up <- theta22 + qnorm(1-alpha/2)*sqrt(Vtheta22)
-      theta22_approxCI_up
+      x <- c(theta21,theta22,p)
+      hess <- numDeriv::hessian(func = loglik_ii_cont, x = x)
       
     }
     
     
-    return(list(CI_theta_1 = c(theta1_approxCI_low, theta1_approxCI_up),
-                   CI_theta_21 = c(theta21_approxCI_low, theta21_approxCI_up), 
-                   CI_theta_22 = c(theta22_approxCI_low, theta22_approxCI_up),
-                   CI_theta_p = c(p_approxCI_low, p_approxCI_up)
-    ))
-    
-    
   }
   
+  ###Get the inverse, the diagonal elements are the variances of the parameters 
+  CV_matrice <- solve(-hess)
+  Vtheta21 <- diag(CV_matrice)[1] 
+  Vtheta22 <- diag(CV_matrice)[2] 
+  Vp <- diag(CV_matrice)[3]
   
+  ### alpha is the significance level
   
+  p_approxCI_low <- p - qnorm(1-alpha/2)*sqrt(Vp)
+  p_approxCI_low <- ifelse(p_approxCI_low < 0, 0L, p_approxCI_low) #compare it to 0 and 1!
+  p_approxCI_up <- p + qnorm(1-alpha/2)*sqrt(Vp)
+  p_approxCI_up <- ifelse(p_approxCI_up > 1, 1L, p_approxCI_up)
   
+  if (n>50 && monitoring=="continuous") {
+    p_approxCI_low <- sapply(p_approxCI_low[1], asNumeric)
+    p_approxCI_up <- sapply(p_approxCI_up[1], asNumeric)
+  }
+  
+  theta21_approxCI_low <- theta21 - qnorm(1-alpha/2)*sqrt(Vtheta21)
+  theta21_approxCI_low <- ifelse(theta21_approxCI_low < 0, 0L, theta21_approxCI_low)
+  theta21_approxCI_up <- theta21 + qnorm(1-alpha/2)*sqrt(Vtheta21)
+  
+  theta22_approxCI_low <- theta22 - qnorm(1-alpha/2)*sqrt(Vtheta22)
+  theta22_approxCI_low <- ifelse(theta22_approxCI_low < 0, 0L, theta22_approxCI_low)
+  theta22_approxCI_up <- theta22 + qnorm(1-alpha/2)*sqrt(Vtheta22)
+  
+  lower_bound <- c(theta1_approxCI_low,theta21_approxCI_low,theta22_approxCI_low,p_approxCI_low)
+  upper_bound <- c(theta1_approxCI_up,theta21_approxCI_up,theta22_approxCI_up,p_approxCI_up)
+  
+  conf_ints <- cbind(lower_bound,upper_bound)
+  row.names(conf_ints) <- c("theta1","theta21","theta22","p")
+  
+  return(conf_ints)
   
   
 }
