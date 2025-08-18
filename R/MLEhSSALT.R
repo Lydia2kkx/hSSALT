@@ -1,13 +1,12 @@
 MLEhSSALT <- function( data , n , censoring=1 , tau , r=NULL , monitoring="continuous" ,
-                               delta=NULL , theta21 , theta22 , p, maxit=1000, tol=1e-8, language ="CPP", parallel=FALSE, ncores=2) {
-  
+                       delta=NULL , theta21 , theta22 , p, maxit=1000, tol=1e-8, language ="CPP", parallel=FALSE, ncores=2) {
   
   ### Part 1: Check Validity of Given Input
   ###Check the input of parameter n
   if (missing(n)) {
     stop("Error: Missing 'n'")
   }
-  if (n < 0 || !is.numeric(n)) {
+  if (length(n)>1 || n < 0 || !is.numeric(n)) { # Added vector check
     stop("Invalid argument 'n'! The value of 'n' should be a positive number")
   }
   ###Check the input of parameter censoring
@@ -19,7 +18,7 @@ MLEhSSALT <- function( data , n , censoring=1 , tau , r=NULL , monitoring="conti
   if (missing(tau)) {
     stop("Error: Missing 'tau'")
   }
-  if (any(tau < 0) ) {
+  if (!is.numeric(tau) || any(tau < 0)) { # Added !is.numeric check
     stop("Invalid argument 'tau'! The values of 'tau' should be positive numbers")
   }
   ###Check the relation between s and tau
@@ -41,12 +40,14 @@ MLEhSSALT <- function( data , n , censoring=1 , tau , r=NULL , monitoring="conti
       }
     }
   }
+  
   ###Check the input of parameter monitoring
   if (!monitoring %in% c("continuous", "interval")){
     monitoring <- "continuous"
     warning("Invalid argument 'monitoring'! monitoring is 'continuous' or 'interval'. 
             monitoring = 'continuous' is used instead")
   }
+  
   ######The following check is newly added.
   if ((monitoring == "continuous") + (!is.null(delta))  == 2){
     warning("Conflict in argument 'monitoring' and delta'! monitoring = 'continuous' is used instead")
@@ -60,7 +61,7 @@ MLEhSSALT <- function( data , n , censoring=1 , tau , r=NULL , monitoring="conti
     if (is.null(delta)) {
       stop("Error: Missing 'delta'")
     }
-    else if((delta < 0 || !is.numeric(delta)) == 2) {
+    else if(delta < 0 || !is.numeric(delta)) { # removed ==2
       stop("Invalid argument 'delta'! The value of 'delta' should be a positive number")
     }
     if (any((tau/delta) %% 1 != 0)) {
@@ -70,8 +71,12 @@ MLEhSSALT <- function( data , n , censoring=1 , tau , r=NULL , monitoring="conti
     if (!(is.integer(data))){
       stop("Error: interval monitoring is only valid for count data.")
     }
+    first_interval <- as.numeric(strsplit(substring(names(data)[1],2,nchar(names(data)[1])-1), ",")[[1]])
+    if (first_interval[2]-first_interval[1] != delta) {
+      stop("Error: 'delta' should equal the length of the intervals in the sample.")
+    }
   }
- 
+  
   ###Check the input of parameter theta21
   if (missing(theta21)) {
     stop("Error: Missing theta21")
@@ -79,9 +84,7 @@ MLEhSSALT <- function( data , n , censoring=1 , tau , r=NULL , monitoring="conti
   if (any(theta21 < 0)) {
     stop("Invalid argument 'theta21'! The value of 'theta21' should be a positive vector")
   }
-  # if (length(theta21) > 1) {
-  #   warning("")
-  # }
+
   ###Check the input of parameter theta22
   if (missing(theta22)) {
     stop("Error: Missing theta22")
@@ -97,31 +100,21 @@ MLEhSSALT <- function( data , n , censoring=1 , tau , r=NULL , monitoring="conti
     stop("Invalid argument 'p'! The value of 'p' should be a positive vector with entries <= 1")
   }
   
+  if (!is.numeric(theta21) || !is.numeric(theta22) || !is.numeric(p)) { # Added check
+    stop("Argmunts 'p', 'theta21' and 'theta22' must be positive numbers")
+  }
+  
   if (!(length(p)==length(theta21) && length(theta21)==length(theta22))){
-    stop("Argmunts 'p', 'thet21' and 'theta22' must be of the same length")
+    stop("Argmunts 'p', 'theta21' and 'theta22' must be of the same length")
   }
   
   if(any(c(length(p),length(theta21),length(theta22)) >1)){
     warning("Vector for initial values detected, the entries which return the largest log-likelihood are selected as the MLE")
   }
   
-  
-  
-  
-  # if (length(theta22) > 1) {
-  #   theta22 <- theta22[1]
-  #   warning("Invalid argument 'theta22'! 'theta22' should a number. Only the first element in the vector is used instead")
-  # }
-  
-  ### 
-  # if( !is.vector( data ) ) {
-  #   stop( " Invalid argument ’data’! The type of ’data’ should be a vector " )
-  # }
-  # if( any(data < 0) || !is.numeric (data) ) {
-  #   stop( " Invalid argument ’data’ ! The values of ’data’ should be positive numbers " )
-  # }
-  
-  
+  if (length(tol) != 1 || length(maxit) != 1) { # Added
+    stop("Arguments 'tol' and 'maxit' must not be given as vectors")
+  }
   
   if (tol < 0 || !is.numeric(tol)) {
     stop("Invalid argument 'tol'! The value of 'tol' should be a positive number")
@@ -154,10 +147,6 @@ MLEhSSALT <- function( data , n , censoring=1 , tau , r=NULL , monitoring="conti
             language = 'CPP' is used instead")
   }
   
-  
-  
-  
-  
   # Main function
   
   if( monitoring == "continuous" ) {
@@ -166,80 +155,3 @@ MLEhSSALT <- function( data , n , censoring=1 , tau , r=NULL , monitoring="conti
     return(MLE_Geo( data=data , n=n , tau=tau , delta=delta , theta21=theta21 , theta22=theta22 , p=p, maxit, tol, language, parallel, ncores ))
   }
 }
-
-
-
-# 
-# ###Check the input of parameter n
-# if( n < 0 || !is.numeric(n) ) {
-#   stop( "Invalid argument ’n’! The value of ’n’ should be a postive number" )
-# }
-# if ( n < length(data) ) {
-#   stop( " Invalid argument 'n' ! The value of 'n' should be larger  than the
-#            length of data " )
-# }
-# ###Check the input of parameter censoring
-# if((censoring == 1) + (censoring == 2) < 1 ) {
-#   censoring <- 1
-#   warning ( " Invalid argument ’ censoring ’ ! censoring is either 1 or 2 .
-#            censoring = 1 is used instead" )
-# }
-# 
-# ###Check the input of parameter monitoring
-# if((monitoring == "continuous") + (monitoring == "interval") < 1 ) {
-#   censoring <- "continuous"
-#   warning ( " Invalid argument ’ censoring ’ ! censoring is either 'continuous' or 'interval' .
-#            continuous monitoring is used instead" )
-# }
-# 
-# # Check for additional parameters
-# #
-# # d
-# if(is.element(FALSE,unique(d)==c(1,0))){
-#   stop(" Invalid argument 'd' ! The entries of 'd' should either be zero or 1" )
-# }
-# 
-# # if(length(d)!=n){
-# #   stop(" Invalid argument 'd' ! d must have n entries" )
-# # }
-# 
-# ###Check the input of parameter tau
-# if( tau < 0 || !is.numeric(tau) ) {
-#   stop( "Invalid argument ’tau’! The value of ’tau’ should be a postive number" )
-# }
-# 
-# ###Check the input of parameter r
-# if( r < 0 || !is.numeric(r) ) {
-#   stop( "Invalid argument ’r’! The value of ’r’ should be a postive number" )
-# }
-# 
-# # if(censoring==2 && !is.integer(r)) {
-# #   stop( "Invalid argument ’r’! In type-II censoring The value of ’r’ should be an integer" )
-# # }
-# 
-# ###Check the input of parameter delta
-# if( delta < 0 || !is.numeric(delta) || delta > 1 ) {
-#   stop( "Invalid argument ’delta’! The value of ’delta’ should be a postive number in (0,1)" )
-# }
-# 
-# 
-# ###Check the input of parameter p
-# if(is.element(TRUE, p <0 ) || is.element(TRUE, p > 1) ) {
-#   stop( "Invalid argument ’p’! The value of ’p’ should be a postive number in (0,1)" )
-#   
-# }
-# 
-# 
-# ###Check the input of parameter theta21
-# if( is.element(FALSE, theta21 > 0) ) {
-#   stop( "Invalid argument ’theta21’! The value of ’theta21’ should be  postive" )
-# }
-# 
-# ###Check the input of parameter theta21
-# if( is.element(FALSE, theta22 > 0) ) {
-#   stop( "Invalid argument ’theta22’! The value of ’theta22’ should be  postive" )
-# }
-# 
-
-
-

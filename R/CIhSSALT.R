@@ -1,15 +1,18 @@
 
-
-CIhSSALT <- function( data , n , censoring = 1 , tau , r=NULL, monitoring = "continuous" ,
-                          delta = NULL, CImethod = "asymptotic" , alpha = 0.05 , B = 1000 , theta1,
-                          theta21 , theta22 , p , maxit=1000, tol=1e-8, language ="CPP", parallel=FALSE, ncores=2){
-
+CIhSSALT <- function( data , n , MLEhSSALT_Obj, censoring = 1 , tau , r=NULL, monitoring = "continuous" ,
+                      delta = NULL, CImethod = "asymptotic" , alpha = 0.05 , B = 1000 , maxit=1000, tol=1e-8, language ="CPP", parallel=FALSE, ncores=2,grid=FALSE){
+  
+  theta1 <- MLEhSSALT_Obj$mle$theta1
+  theta21 <- MLEhSSALT_Obj$mle$theta21
+  theta22 <- MLEhSSALT_Obj$mle$theta22
+  p <- MLEhSSALT_Obj$mle$p1
+  
   ### Part 1: Check Validity of Given Input
   ###Check the input of parameter n
   if (missing(n)) {
     stop("Error: Missing 'n'")
   }
-  if (n < 0 || !is.numeric(n)) {
+  if (length(n)>1 || n < 0 || !is.numeric(n)) {
     stop("Invalid argument 'n'! The value of 'n' should be a positive number")
   }
   ###Check the input of parameter censoring
@@ -21,7 +24,7 @@ CIhSSALT <- function( data , n , censoring = 1 , tau , r=NULL, monitoring = "con
   if (missing(tau)) {
     stop("Error: Missing 'tau'")
   }
-  if (any(tau < 0) ) {
+  if (!is.numeric(tau) || any(tau < 0) ) {
     stop("Invalid argument 'tau'! The values of 'tau' should be positive numbers")
   }
   ###Check the relation between s and tau
@@ -54,7 +57,7 @@ CIhSSALT <- function( data , n , censoring = 1 , tau , r=NULL, monitoring = "con
     warning("Conflict in argument 'monitoring' and delta'! monitoring = 'continuous' is used instead")
   }
   if ((monitoring == "interval")){
-
+    
     if(censoring == 2){
       stop("Error: interval monitoring is only valid for type 1 censoring.")
     }
@@ -62,7 +65,7 @@ CIhSSALT <- function( data , n , censoring = 1 , tau , r=NULL, monitoring = "con
     if (is.null(delta)) {
       stop("Error: Missing 'delta'")
     }
-    else if((delta < 0 || !is.numeric(delta)) == 2) {
+    else if(delta < 0 || !is.numeric(delta)) {
       stop("Invalid argument 'delta'! The value of 'delta' should be a positive number")
     }
     if (any((tau/delta) %% 1 != 0)) {
@@ -72,50 +75,25 @@ CIhSSALT <- function( data , n , censoring = 1 , tau , r=NULL, monitoring = "con
     if (!(is.integer(data))){
       stop("Error: interval monitoring is only valid for count data.")
     }
+    first_interval <- as.numeric(strsplit(substring(names(data)[1],2,nchar(names(data)[1])-1), ",")[[1]])
+    if (first_interval[2]-first_interval[1] != delta) {
+      stop("Error: 'delta' should equal the length of the intervals in the sample.")
+    }
   }
-
-  ###Check the input of parameter theta21
-  if (missing(theta21)) {
-    stop("Error: Missing theta21")
+  
+  if (length(tol) != 1 || length(maxit) != 1) { # Added
+    stop("Arguments 'tol' and 'maxit' must not be given as vectors")
   }
-  if (any(theta21 < 0)) {
-    stop("Invalid argument 'theta21'! The value of 'theta21' should be a positive vector")
-  }
-  # if (length(theta21) > 1) {
-  #   warning("")
-  # }
-  ###Check the input of parameter theta22
-  if (missing(theta22)) {
-    stop("Error: Missing theta22")
-  }
-  if (any(theta22 < 0)) {
-    stop("Invalid argument 'theta22'! The value of 'theta22' should be a positive vector")
-  }
-
-  if (missing(p)) {
-    stop("Error: Missing p")
-  }
-  if (any(p < 0, p > 1)) {
-    stop("Invalid argument 'p'! The value of 'p' should be a positive vector with entries <= 1")
-  }
-
-  if (!(length(p)==length(theta21) && length(theta21)==length(theta22))){
-    stop("Argmunts 'p', 'thet21' and 'theta22' must be of the same length")
-  }
-
-  if(any(c(length(p),length(theta21),length(theta22)) >1)){
-    warning("Vector for initial values detected, the entries which return the largest log-likelihood are selected as the MLE")
-  }
-
+  
   if (tol < 0 || !is.numeric(tol)) {
     stop("Invalid argument 'tol'! The value of 'tol' should be a positive number")
   }
-
-
+  
+  
   if (maxit < 0 || !is.numeric(maxit)) {
     stop("Invalid argument 'maxit'! The value of 'maxit' should be a positive number")
   }
-
+  
   if (ncores < 0 || !is.numeric(ncores)) {
     stop("Invalid argument 'ncores'! The value of 'ncores' should be a positive integer")
   }
@@ -123,43 +101,59 @@ CIhSSALT <- function( data , n , censoring = 1 , tau , r=NULL, monitoring = "con
     ncores = parallel::detectCores()
     warning(paste0("System has less cores. 'ncores' is set to ", ncores))
   }
-
+  
   if (!is.logical(parallel)){
     stop("Invalid argument 'parallel'! The value of 'parallel' should be a boolean")
   }
-
+  
   if (!is.logical(parallel)){
     stop("Invalid argument 'parallel'! The value of 'parallel' should be a boolean")
   }
-
+  
   if (!language %in% c("CPP", "R")){
     language <- "CPP"
     warning("Invalid argument 'language'! language is 'CPP' or 'R'.
             language = 'CPP' is used instead")
   }
-
+  
   if (any(alpha < 0, alpha > 1)) {
     stop("Invalid argument 'alpha'! The value of 'alpha' should be a in range (0,1)")
   }
-
-
-
+  
+  
+  
   ###Check the input of parameter CImethod
   if(!(CImethod=="asymptotic" || CImethod=="percentile" || CImethod=="bca") ){
     CImethod <- "asymptotic"
     warning ( "’CImethod’ should be ’asymptotic’ , ’percentile’ or ’bca’!
                The default value of’ asymptotic’ is used instead.")
   }
+  
+  ###Check MLE Object
+  if (class(MLEhSSALT_Obj) != "hSSALTMLE") {
+    stop("Expected an object of class ’hSSALTMLE’.")
+  }
+  if (MLEhSSALT_Obj$message != "convergent") {
+    warning ("The EM Algorithm failed to converge! Values of 'p', 'theta21', 'theta22' may not equal the MLEs.")
+  }
+  if (is.na(MLEhSSALT_Obj$mle$theta1)) {
+    warning("No value for 'theta1' detected.")
+  } else {
+    if (MLEhSSALT_Obj$mle$theta1 < MLEhSSALT_Obj$mle$theta22) {
+      warning("Mean lifetime in first stress level must be greater than mean lifetimes in the second stress level.")
+    }
+  }
+  
   ###3 methods
   if(CImethod == "asymptotic"){
     CIsay_hSSALT( data, n, censoring, tau , r, monitoring, delta, alpha, theta1, p, theta21, theta22  )
   }else{
     if(CImethod == "percentile"){
       CIbs_hSSALT( data , n , censoring , tau, r , monitoring , delta , alpha , B, theta1,
-                   theta21 , theta22 , p , maxit , tol , language , parallel , ncores )
+                   theta21 , theta22 , p , maxit , tol , language , parallel , ncores, grid)
     }else{
-      CIbca_hSSALT( data , n , censoring , tau , r, monitoring , alpha , B,
-                    theta1, theta21 , theta22 , p , maxit , tol , language , parallel , ncores )
+      CIbca_hSSALT( data , n , censoring , tau , r, monitoring , delta, alpha , B,
+                    theta1, theta21 , theta22 , p , maxit , tol , language , parallel , ncores, grid)
     }
   }
 }
