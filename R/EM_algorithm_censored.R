@@ -60,7 +60,7 @@ EM_algorithm_censored <- function(ind, data, d, N, parameter_starts, tol){
   
   if(k <= N){
     message <- "convergent"
-    posterior <- cbind(hij2, hij1)
+    posterior <- cbind(hij1, hij2)
   } else {
     message <- "not convergent"
     posterior <- NA
