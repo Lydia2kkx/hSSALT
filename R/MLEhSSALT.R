@@ -1,5 +1,6 @@
-MLEhSSALT <- function( data , n , censoring=1 , tau , r=NULL , monitoring="continuous" ,
-                       delta=NULL , theta21 , theta22 , p, maxit=1000, tol=1e-8, language ="CPP", parallel=FALSE, ncores=2) {
+MLEhSSALT <- function( data, n, censoring = 1, tau, r = NULL, monitoring = "continuous",
+                       delta = NULL, theta21, theta22, p, maxit = 1000, tol = 1e-8, 
+                       language = "CPP", parallel = FALSE, ncores = 2) {
   
   ### Part 1: Check Validity of Given Input
   ###Check the input of parameter n
@@ -150,8 +151,10 @@ MLEhSSALT <- function( data , n , censoring=1 , tau , r=NULL , monitoring="conti
   # Main function
   
   if( monitoring == "continuous" ) {
-    return(MLE_Exp( data , n , censoring , tau , r , theta21 , theta22 , p, maxit, tol, language, parallel, ncores ))
+    return(MLE_Exp(data = data, n = n, censoring, tau = tau, r, theta21 = theta21, 
+                   theta22 = theta22, p = p, maxit, tol, language, parallel, ncores))
   } else {
-    return(MLE_Geo( data=data , n=n , tau=tau , delta=delta , theta21=theta21 , theta22=theta22 , p=p, maxit, tol, language, parallel, ncores ))
+    return(MLE_Geo(data = data, n = n, tau = tau, delta = delta, theta21 = theta21, 
+                   theta22 = theta22, p = p, maxit, tol, language, parallel, ncores))
   }
 }
