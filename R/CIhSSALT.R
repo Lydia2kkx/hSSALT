@@ -1,6 +1,7 @@
 
-CIhSSALT <- function( data , n , MLEhSSALT_Obj, censoring = 1 , tau , r=NULL, monitoring = "continuous" ,
-                      delta = NULL, CImethod = "asymptotic" , alpha = 0.05 , B = 1000 , maxit=1000, tol=1e-8, language ="CPP", parallel=FALSE, ncores=2,grid=FALSE){
+CIhSSALT <- function(data, n, MLEhSSALT_Obj, censoring = 1, tau, r=NULL, monitoring = "continuous",
+                     delta = NULL, CImethod = "asymptotic", alpha = 0.05, B = 1000, maxit = 1000, 
+                     tol=1e-8, language = "CPP", parallel = FALSE, ncores = 2, grid = FALSE){
   
   theta1 <- MLEhSSALT_Obj$mle$theta1
   theta21 <- MLEhSSALT_Obj$mle$theta21
@@ -125,13 +126,13 @@ CIhSSALT <- function( data , n , MLEhSSALT_Obj, censoring = 1 , tau , r=NULL, mo
   ###Check the input of parameter CImethod
   if(!(CImethod=="asymptotic" || CImethod=="percentile" || CImethod=="bca") ){
     CImethod <- "asymptotic"
-    warning ( "’CImethod’ should be ’asymptotic’ , ’percentile’ or ’bca’!
-               The default value of’ asymptotic’ is used instead.")
+    warning ( "'CImethod' should be 'asymptotic' , 'percentile' or 'bca'!
+               The default value of 'asymptotic' is used instead.")
   }
   
   ###Check MLE Object
   if (class(MLEhSSALT_Obj) != "hSSALTMLE") {
-    stop("Expected an object of class ’hSSALTMLE’.")
+    stop("Expected an object of class 'hSSALTMLE'.")
   }
   if (MLEhSSALT_Obj$message != "convergent") {
     warning ("The EM Algorithm failed to converge! Values of 'p', 'theta21', 'theta22' may not equal the MLEs.")
@@ -146,14 +147,14 @@ CIhSSALT <- function( data , n , MLEhSSALT_Obj, censoring = 1 , tau , r=NULL, mo
   
   ###3 methods
   if(CImethod == "asymptotic"){
-    CIsay_hSSALT( data, n, censoring, tau , r, monitoring, delta, alpha, theta1, p, theta21, theta22  )
+    CIsay_hSSALT(data, n, censoring, tau, r, monitoring, delta, alpha, theta1, p, theta21, theta22)
   }else{
     if(CImethod == "percentile"){
-      CIbs_hSSALT( data , n , censoring , tau, r , monitoring , delta , alpha , B, theta1,
-                   theta21 , theta22 , p , maxit , tol , language , parallel , ncores, grid)
+      CIbs_hSSALT(data, n, censoring, tau, r, monitoring, delta, alpha, B, theta1,
+                  theta21, theta22, p, maxit, tol, language, parallel, ncores, grid)
     }else{
-      CIbca_hSSALT( data , n , censoring , tau , r, monitoring , delta, alpha , B,
-                    theta1, theta21 , theta22 , p , maxit , tol , language , parallel , ncores, grid)
+      CIbca_hSSALT(data, n, censoring, tau, r, monitoring, delta, alpha, B,
+                   theta1, theta21, theta22, p, maxit, tol, language, parallel, ncores, grid)
     }
   }
 }
