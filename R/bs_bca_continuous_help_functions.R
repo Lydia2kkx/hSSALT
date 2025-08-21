@@ -1,9 +1,9 @@
 
 
-bootstrap_distribution <-function(data, n,monitoring,theta1,theta21,theta22,p, censoring,
-                                tau , r, B, delta, maxit, tol, language, parallel, ncores,grid){
+bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22, p, censoring,
+                                  tau, r, B, delta, maxit, tol, language, parallel, ncores, grid){
   
-  if(censoring==2){
+  if(censoring == 2){
     tau <- c(tau[1], data[r])
   }
   
@@ -22,7 +22,8 @@ bootstrap_distribution <-function(data, n,monitoring,theta1,theta21,theta22,p, c
   Results <- list()
   while (j <= B){
     
-    sample <- rhSSALT(n,1,tau=tau,theta1=theta1,theta21 = theta21,theta22 = theta22,p=p,monitoring=monitoring,delta=delta)
+    sample <- rhSSALT(n, 1, tau = tau, theta1 = theta1, theta21 = theta21, theta22 = theta22,
+                      p = p, monitoring = monitoring, delta = delta)
     n1 <- sample$Censored_num_level[1]
     n2 <- sample$Censored_num_level[2]
     T2 <- sample$Full_dat[sample$Full_dat>tau[1]]
@@ -32,8 +33,9 @@ bootstrap_distribution <-function(data, n,monitoring,theta1,theta21,theta22,p, c
       next
     }
     
-    MLE_results <-MLEhSSALT(sample$Censored_dat,n,1,tau=tau,theta21 = theta21_grid,theta22 = theta22_grid,p=p_grid,language = language,
-                            monitoring=monitoring,delta=delta,parallel = parallel,ncores = ncores)
+    MLE_results <-MLEhSSALT(sample$Censored_dat, n, 1, tau = tau, theta21 = theta21_grid, 
+                            theta22 = theta22_grid, p = p_grid, language = language,
+                            monitoring = monitoring, delta = delta, parallel = parallel, ncores = ncores)
     Estimate_df <- MLE_results$mle
     Estimate_df$loglik <- MLE_results$loglik
     Estimate_df$n2 <- n2
