@@ -4,13 +4,13 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
   ############# Part 1 first stress level
   ############################################################################
   
-  T1 <- data[data<tau[1]]
+  T1 <- data[data < tau[1]]
   n1 <- length(T1)
-  T2 <- data[data>=tau[1]]
+  T2 <- data[data >= tau[1]]
   
   if (n1 < 1){
     warning("No observation under the first stress level!")
-    mle1 =NA
+    mle1 <- NA
   }else{
     ### Find the unique solution (it is proved to be unique) with uniroot function
     mle1 <- (sum(T1) + tau[1]*(n-n1))/n1
@@ -25,26 +25,26 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
   
   n_c <- length(data)
   
-  if (censoring ==1){
-    n2 <- length(T2[T2<=tau[2]])
+  if (censoring == 1){
+    n2 <- length(T2[T2 <= tau[2]])
     
-    if (n>n_c){  #censored data
-      t22 <- c(T2,rep(tau[2], n-n_c))
+    if (n > n_c){  #censored data
+      t22 <- c(T2, rep(tau[2], n-n_c))
       d <- 1*(t22 < tau[2])
     }else{       #uncensored data
       d <- 1*(T2 < tau[2])              # r = tau2
       t22 <- T2 # observed or censored data
-      t22[which(t22>=tau[2])] = tau[2] #set data after censoring tau2 to tau 2
+      t22[which(t22 >= tau[2])] = tau[2] #set data after censoring tau2 to tau 2
     }
   }
   
-  if (censoring ==2){
+  if (censoring == 2){
     n2 <- r-n1
     cs <- T2[r-n1]
     
     if (n>n_c){
-      t22 <- c(T2, rep(cs,n-n_c))
-      d <- c(rep(1,n_c-n1), rep(0,n-n_c))
+      t22 <- c(T2, rep(cs, n-n_c))
+      d <- c(rep(1, n_c-n1), rep(0, n-n_c))
     }else{
       d <- 1*(T2 <= cs)              # censoring indicator
       t22 <- apply(cbind(T2, cs), 1, min) # observed or censored data
@@ -55,14 +55,14 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
   #cat("d: ", d, "\n")
   #cat("Test: ", t22-tau[1], "\n")
   
-  if (n2 <=2){
+  if (n2 <= 2){
     warning("At least 3 observations in the second stress level are needed. The number of observations cannot perform an EM algorithm in a proper way.")
   }
  
   # supports both vectors and numeric values for p, theta21, theta22
   # parameter_starts <- expand.grid(p, theta21, theta22)
   # colnames(parameter_starts) <- c("omega1", "theta21", "theta22")
-  parameter_starts <- data.frame(omega1=p, theta21=theta21, theta22)
+  parameter_starts <- data.frame(omega1 = p, theta21 = theta21, theta22 = theta22)
 
   if(language == "CPP") {
     
@@ -71,7 +71,8 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
       # Remove index (unnecessary for one setup of parameters)
       # EM_mle$ind <-NULL
       EM_mle$results$ind <-NULL
-      return(list(results=c(mle1=mle1, n1=n1, mle2=as.list(EM_mle$results), n2=n2, censored_rate=1-n_c/n ), posterior=EM_mle$posterior))
+      return(list(results = c(mle1 = mle1, n1 = n1, mle2 = as.list(EM_mle$results), 
+                              n2 = n2, censored_rate = 1-n_c/n), posterior = EM_mle$posterior))
     }else{
       
       if(parallel == TRUE){
@@ -97,16 +98,18 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
       
       mle_em <- find_max(Estimate_df)
      
-      return(list(mle1=mle1, n1=n1, mle2=mle_em, n2=n2, censored_rate=1-n_c/n, estimates=Estimate_df, posterior=posterior_l))
+      return(list(mle1 = mle1, n1 = n1, mle2 = mle_em, n2 = n2, censored_rate = 1 - n_c/n, 
+                  estimates = Estimate_df, posterior = posterior_l))
     }
     
   }else{
     
-    if (dim(parameter_starts)[1]==1){
-      EM_mle <- EM_algorithm_censored(ind =1, data=t22-tau[1], d=d, N=maxit, parameter_starts = parameter_starts, tol)
+    if (dim(parameter_starts)[1] == 1){
+      EM_mle <- EM_algorithm_censored(ind = 1, data = t22-tau[1], d = d, N = maxit, 
+                                      parameter_starts = parameter_starts, tol)
       # Remove index (unnecessary for one setup of parameters)
       # EM_mle$ind <-NULL
-      EM_mle$results$ind <-NULL
+      EM_mle$results$ind <- NULL
       
       # check whether has converged and mle1 > theta22
       if (!is.na(EM_mle$results$theta22) && !is.na(mle1) && mle1 < EM_mle$results$theta22) {
@@ -122,8 +125,10 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
         info <- NA
       }
       
-      mle <- cbind(EM_mle$results[,1:2],theta1=mle1,EM_mle$results[,3:4])
-      output <- list(n1=n1, n2=n2, mle=mle, loglik=EM_mle$results$loglik, iteration=EM_mle$results$iteration, message=EM_mle$results$message, info=info,censored_rate=1-(n1+n2)/n, posterior=EM_mle$posterior)
+      mle <- cbind(EM_mle$results[, 1:2], theta1 = mle1, EM_mle$results[, 3:4])
+      output <- list(n1 = n1, n2 = n2, mle = mle, loglik = EM_mle$results$loglik, 
+                     iteration = EM_mle$results$iteration, message = EM_mle$results$message, 
+                     info = info, censored_rate = 1-(n1+n2)/n, posterior = EM_mle$posterior)
       class(output) <- "hSSALTMLE"
       return(output)
     }else{
@@ -168,7 +173,7 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
         }
       }
       
-      mle <- cbind(mle_em[,1:2],theta1=mle1,mle_em[,3:4])
+      mle <- cbind(mle_em[, 1:2], theta1 = mle1, mle_em[, 3:4])
       
       #Check homogeneity
       if (!is.na(mle$theta22)) {
@@ -177,11 +182,11 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
         info <- NA
       }
       
-      output <- list(n1=n1, n2=n2, mle=mle,loglik=mle_em$loglik,iteration=mle_em$iteration,message=mle_em$message, info=info,censored_rate=1-(n1+n2)/n, posterior=posterior_l)
+      output <- list(n1 = n1, n2 = n2, mle = mle, loglik = mle_em$loglik, 
+                     iteration = mle_em$iteration, message = mle_em$message, 
+                     info = info, censored_rate = 1-(n1+n2)/n, posterior = posterior_l)
       class(output) <- "hSSALTMLE"
       return(output)
     }
-    
   }
-  
 }
