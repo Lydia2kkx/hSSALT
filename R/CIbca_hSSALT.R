@@ -1,13 +1,14 @@
 
-CIbca_hSSALT<- function(data , n , censoring , tau , r, monitoring , delta, alpha , B,
-                        theta1, theta21 , theta22 , p , maxit , tol , language , parallel , ncores, grid){
+CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
+                        theta1, theta21, theta22, p, maxit, tol, language, parallel, ncores, grid){
   
   if(censoring==2){
     tau <- c(tau[1], data[r])
   }
 
-  bootstrap_distri <- bootstrap_distribution(data, n,monitoring=monitoring,theta1=theta1,theta21=theta21,
-                                             theta22=theta22,p=p,censoring, tau , r, B, delta=delta,maxit, tol, language, parallel, ncores,grid)
+  bootstrap_distri <- bootstrap_distribution(data, n, monitoring = monitoring, theta1 = theta1, theta21 = theta21,
+                                             theta22 = theta22, p = p, censoring, tau, r, B, delta = delta, maxit, tol, 
+                                             language, parallel, ncores, grid)
 
   ### alpha is the significant level, take theta1 as an example
   # quantile(bootstrap_distri$theta1, c(alpha/2, 1-alpha/2))
@@ -37,7 +38,7 @@ CIbca_hSSALT<- function(data , n , censoring , tau , r, monitoring , delta, alph
     
     T1 <- data[data<tau[1]]
     n1 <- length(T1)
-    T2 <- data[data>=tau[1]] # censored or uncensored?
+    T2 <- data[data>=tau[1]] 
     n2 <- length(T2)
     
     mle1ij <- c()
@@ -57,12 +58,15 @@ CIbca_hSSALT<- function(data , n , censoring , tau , r, monitoring , delta, alph
     ####Calculation of a2s
     ### T2 is the failures under the second stress level
     Re <- list()
-    for (i in 1 : (length(T2) - (n-n1-n2))) {
-      T2_new <- T2[-i]
-      d <- 1*(T2_new <= tau[2])
+    for (i in 1 : n2) { #Yao: I changed (length(T2) - (n-n1-n2)) into n2, since the original one
+                        #is length(T2_combine), which includes also the censored items. Thus, we
+                        #need length(T2) - (n-n1-n2) for the number of observed failure under the 
+                        #second stress level.
+      T2_new <- T2[-i]  
+      d <- c(1*(T2_new <= tau[2]), rep(0, n-n1-n2)) #Yao: I also add the censored part here
       t22_new <- apply(cbind(T2_new, tau[2]), 1, min) # observed or censored data
-      if(language=="CPP"){
-        if(parallel==T){
+      if(language == "CPP"){
+        if(parallel == TRUE){
           cl <- parallel::makeCluster(getOption("cl.cores", ncores))
           model_list_new <- parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d, N=maxit,
                                       parameter_starts = parameter_starts, tol = tol)
@@ -72,7 +76,7 @@ CIbca_hSSALT<- function(data , n , censoring , tau , r, monitoring , delta, alph
                                    parameter_starts = parameter_starts, tol = tol)
         }
       }else{
-        if(parallel==T){
+        if(parallel == TRUE){
           cl <- parallel::makeCluster(getOption("cl.cores", ncores))
           model_list_new <- parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored, data = t22_new - tau[1], d=d, N=maxit,
                                       parameter_starts = parameter_starts, tol = tol)
@@ -163,10 +167,10 @@ CIbca_hSSALT<- function(data , n , censoring , tau , r, monitoring , delta, alph
     
     ####Calculation of a2s
     Re <- list()
-    for (i in 1 : (length(T2_combine) - (n-n1-n2))) {
-      T2_new <- T2_combine[-i] 
+    for (i in 1 : (length(T2_combine) - (n-n1-n2))) { #Yao: This (length(T2_combine) - (n-n1-n2)) should also be changed
+      T2_new <- T2_combine[-i] #Yao: Here also
       n2j <- table(cut(T2_new[T2_new < tau[2]], breaks = seq(tau[1], tau[2], delta)))
-      d <- 1*(T2_new < tau[2])
+      d <- 1*(T2_new < tau[2]) #Yao: Here also
       data_new <- c(rep((1:q2)-1, n2j), rep(q2, n-1-n1-sum(d)))
       model_list_new <- lapply(1:nrow(parameter_starts), EM_algorithm_interval, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
                                parameter_starts = parameter_starts, tol = tol)
