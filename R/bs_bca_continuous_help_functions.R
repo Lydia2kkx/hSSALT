@@ -7,10 +7,16 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
     tau <- c(tau[1], data[r])
   }
   
-  ###simple Grid
-  p_grid <- ifelse(grid, c(p*0.5,p,p*0.5+0.5), p)
-  theta21_grid <- ifelse(grid, c(theta21*0.5,theta21,theta21*1.5), theta21)
-  theta22_grid <- ifelse(grid, c(theta22*0.5,theta22,theta22*1.5), theta22)
+  #Avner: Simple Grid for now
+  if (grid) {
+    p_grid <- c(p*0.5,p,p*0.5+0.5)
+    theta21_grid <- c(theta21*0.5,theta21,theta21*1.5)
+    theta22_grid <- c(theta22*0.5,theta22,theta22*1.5)
+  } else {
+    p_grid <- p
+    theta21_grid <- theta21
+    theta22_grid <- theta22
+  }
   
   same_threshold <- 0.05
   p_threshold <- 0.01
@@ -20,6 +26,10 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
   j <- 1
   iter <- 1 ## iteration counter (how many times we need to obtain B times valid results)
   Results <- list()
+  
+  non_convergence_counter <- 0
+  convergence_counter <- 0
+  
   while (j <= B){
     
     sample <- rhSSALT(n, 1, tau = tau, theta1 = theta1, theta21 = theta21, theta22 = theta22,
@@ -42,8 +52,10 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
     
     if (MLE_results$message=="not convergent") {
       iter <- iter + 1
+      non_convergence_counter <- non_convergence_counter + 1
       next
     }
+    convergence_counter <- convergence_counter +1
     
     if(is.na(Estimate_df$p1) || is.na(Estimate_df$theta1) || is.na(Estimate_df$theta22)){ ###If all NAs in prob1, next iteration
       iter <- iter + 1
@@ -64,8 +76,6 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
       Estimate_df$info <- "heter"
     }
     
-    
-    #Estimate_df$mle2_classi <- (sum(T2[1:n2] - tau[1]) + (n - n1 - n2) * (tau[2] - tau[1]))/ n2
     if(p_adjust){
       Estimate_df$p1[Estimate_df$info == "homo"] <- Estimate_df$p2[Estimate_df$info == "homo"] <- 0.5
     }
@@ -79,9 +89,12 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
       Results[[j]] <- Estimate_df  ##Also provide iter as additional information in the result
     }
     iter <- iter + 1
-    #cat("j: ", j, "\n")
-    j <- j + 1 ### NN # increase the iteration counter
+    j <- j + 1 ### increase the iteration counter
   }
+  
+  print(non_convergence_counter)
+  print(convergence_counter)
+  stop("WHATS UPPP")
   
   ####Omit NAs in the result list
   Results_omit <- lapply(Results, na.omit)

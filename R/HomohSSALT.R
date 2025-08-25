@@ -1,3 +1,24 @@
+#' Homogeneity test for hSSALT
+#'
+#' Perform a homogeneity test under the second stress level \code{s2} of a simple hSSALT model with exponential (continuous) distribution.
+#'
+#' @param data sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.
+#' @param n sample size, a positive integer.
+#' @param censoring \code{1} for Type-I censoring or \code{2} for Type-II censoring. Default value is \code{1}.
+#' @param tau If censoring type is \code{1}, \code{tau} is a vector with length 2; if censoring type is \code{2}, \code{tau} is a positive numeric value.
+#' @param r If censoring type is \code{2}, \code{r} provides the pre-specified number of failures, a positive integer.
+#' @param alpha significance level. Default value is \code{0.05}.
+#' @param M number of simulations used to generate critical values, a positive integer. Default value is \code{10000}.
+#'
+#' @return An \code{hSSALTtest} object containing a hypothesis test table that reports the test statistic, the simulated critical value at the given significance level, the alternative hypothesis, and the test decision.
+#'
+#' @examples
+#' sample <- rhSSALT(n = 30, tau = c(5, 10), theta1 = 10, theta21 = 5, theta22 = 8, p = 0.4)
+#' test <- HomohSSALT(data = sample$`censored sample`, n = 30, tau = c(5, 10))
+#'
+#' @export
+
+
 
 HomohSSALT <- function(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 10000){
   ### Part 1: Check Validity of Given Input

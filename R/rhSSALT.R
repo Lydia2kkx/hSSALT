@@ -1,3 +1,25 @@
+#' Simulate a simple hSSALT random dataset
+#'
+#' Simulate a simple hSSALT random dataset with exponential (continuous) or geometric (interval) distribution.
+#'
+#' @param n sample size, an integer.
+#' @param censoring \code{1} for Type-I censoring or \code{2} for Type-II censoring. Default value is \code{1}.
+#' @param tau If censoring type is \code{1}, \code{tau} is a vector with length 2; if censoring type is \code{2}, \code{tau} is a positive numeric value.
+#' @param r If censoring type is \code{2}, \code{r} provides the pre-specified number of failures, a positive integer.
+#' @param monitoring \code{continuous} or \code{interval}, default value is \code{continuous}. For interval monitoring, only equally spaced inspection is supported.
+#' @param delta if interval monitoring, interval length, a positive numeric value. Default value is \code{NULL}.
+#' @param theta1 mean lifetime parameter in the exponential distribution under \code{s1}, a numeric value.
+#' @param theta21 mean lifetime parameter in the exponential distribution of the first group under \code{s2}, a positive numeric value.
+#' @param theta22 mean lifetime parameter in the exponential distribution of the second group under \code{s2}, a positive numeric value.
+#' @param p mixture proportion, a numeric value between 0 and 1.
+#'
+#' @return A list consisting of four sub-lists: censored sample, the observed number of censored failures under \code{s1} and \code{s2}, complete sample, the observed number of failures under \code{s1} and \code{s2}.
+#'
+#' @examples
+#' sample <- rhSSALT(n = 30, tau = c(5, 10), theta1 = 10, theta21 = 5, theta22 = 8, p = 0.4)
+#'
+#' @export
+
 rhSSALT <- function(n, censoring = 1, tau, r = NULL, monitoring = "continuous", delta = NULL, 
                     theta1, theta21, theta22, p){
   ### Part 1: Check Validity of Given Input

@@ -2,6 +2,7 @@
 CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
                         theta1, theta21, theta22, p, maxit, tol, language, parallel, ncores, grid){
   
+  #Avner: I'm not sure if this is the right way to go about dealing with Type-II censoring
   if(censoring==2){
     tau <- c(tau[1], data[r])
   }
@@ -90,7 +91,6 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       
       Estimate_df_new <- data.frame(matrix(nrow = length(model_list_new), ncol = 7))
       
-      #colnames(model_list_new) <- colnames(model_list_new[[1]]$results)
       posterior_l_new <- vector(mode = "list", length=length(model_list_new))
       for (j in 1:length(model_list_new)){
         Estimate_df_new[j,] <- model_list_new[[j]]$results
@@ -101,12 +101,10 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
     }
   } else {
     
-    # get interval bounds from data
-    
     ### q1 is the number of intervals under the first stress level
     q1 <- tau[1]/delta
-    
     n1j <- data[1:q1]
+    
     n1 <- sum(n1j)
     
     ### tau1j are the right bounds of intervals
@@ -129,37 +127,44 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
     
     n2 <- sum(n2j)
     
-    #n21 <- round(p[2]*(n-n1))
     n21 <- round(p*(n-n1))
     n22 <- sum(data)-n1-n21
     
-    # Create artificial T1,T2
-    T_tot <- c()
-    for (i in 1:length(data)) {
-      if (data[i] != 0) {
-        T_tot <- c(T_tot,rep(i*delta,data[i]))
+    jackknife_samples_interval <- list()
+    index <- 1
+    for (bin in seq_along(data)) {
+      if (data[bin] > 0) {
+        for (k in 1:data[bin]) {
+          temp <- data
+          temp[bin] <- temp[bin] - 1
+          jackknife_samples_interval[[index]] <- temp
+          index <- index + 1
+        }
       }
     }
-    T1 <- T_tot[T_tot <= tau[1]]
-    T2 <- T_tot[T_tot > tau[1]]
-    
-    T22 <- sample(T2, n22)
-    T21 <- sort(-theta21*log(1-runif(n21)) + tau[1])
-    T2_combine <- sort(c(T21, T22))
-    T2_combine
-    n2 <- sum(T2_combine < tau[2])
-    d <- as.numeric(T2_combine < tau[2])
+
+    jackknife1 <- lapply(jackknife_samples_interval[1:n1], function(tbl) {
+      upper_bounds <- as.numeric(sub("\\((.+),(.+)\\]", "\\2", names(tbl)))
+      tbl[upper_bounds <= tau[1]]
+    })
+    jackknife2 <- lapply(jackknife_samples_interval[(n1+1):(n1+n2)], function(tbl) {
+      upper_bounds <- as.numeric(sub("\\((.+),(.+)\\]", "\\2", names(tbl)))
+      lower_bounds <- as.numeric(sub("\\((.+),(.+)\\]", "\\1", names(tbl)))
+      tbl[upper_bounds <= tau[2]]
+      tbl[lower_bounds >= tau[1]]
+    })
     
     mle1ij <- c()
     for (i in 1 : n1) {
-      T1_new <- T1[-i] 
-      n1j <- table(cut(T1_new, breaks = seq(0, tau[1], delta)))
+      n1j <- jackknife1[[i]]
       tau1j <- seq(delta, tau[1], delta)
       tau1j0 <- tau1j - delta
       mle_1new <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes", n=n,n1j = n1j, n1 = n1-1, hijk1=tau[1],tau1j0 = tau1j0, tau1j = tau1j)$root
       mle1ij <- c(mle1ij, mle_1new)
     }
-    n1j <- table(cut(T1, breaks = seq(0, tau[1], delta)))
+    
+    n1j <- data[1:q1]
+    
     mle1_o <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes",n=n, n1j = n1j, n1 = n1+1, tau1j0 = tau1j0, tau1j = tau1j,hijk1=tau[1])$root
     mle1ij <- c(mle1ij, rep(mle1_o, n2))
     mle1i <- mean(mle1ij)
@@ -167,16 +172,16 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
     
     ####Calculation of a2s
     Re <- list()
-    for (i in 1 : (length(T2_combine) - (n-n1-n2))) { #Yao: This (length(T2_combine) - (n-n1-n2)) should also be changed
-      T2_new <- T2_combine[-i] #Yao: Here also
-      n2j <- table(cut(T2_new[T2_new < tau[2]], breaks = seq(tau[1], tau[2], delta)))
-      d <- 1*(T2_new < tau[2]) #Yao: Here also
-      data_new <- c(rep((1:q2)-1, n2j), rep(q2, n-1-n1-sum(d)))
+    for (i in 1 : n2) { #Yao: This (length(T2_combine) - (n-n1-n2)) should also be changed
+      T2_new <- jackknife2[[i]]
+      d <- c(1*(T2_new < tau[2]), rep(0, n-n1-n2))
+      data_new <- c(rep((1:q2)-1, n2j), rep(q2, max(0,n-1-n1-sum(d))))
       model_list_new <- lapply(1:nrow(parameter_starts), EM_algorithm_interval, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
                                parameter_starts = parameter_starts, tol = tol)
 
       
       Estimate_df_new <- data.frame(matrix(nrow = length(model_list_new), ncol = 7))
+      
       
       posterior_l_new <- vector(mode = "list", length=length(model_list_new))
       for (j in 1:length(model_list_new)){

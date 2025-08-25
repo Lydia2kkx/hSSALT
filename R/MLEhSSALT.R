@@ -1,3 +1,32 @@
+#' Maximum Likelihood Estimation for hSSALT
+#'
+#' Provide point estimation of a simple hSSALT model with exponential (continuous) or geometric (interval) distribution.
+#'
+#' @param data sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.
+#' @param n sample size, a positive integer.
+#' @param censoring \code{1} for Type-I censoring or \code{2} for Type-II censoring. Default value is \code{1}.
+#' @param tau If censoring type is \code{1}, \code{tau} is a vector with length 2; if censoring type is \code{2}, \code{tau} is a positive numeric value.
+#' @param r If censoring type is \code{2}, \code{r} provides the pre-specified number of failures, a positive integer.
+#' @param monitoring \code{"continuous"} or \code{"interval"}. Default value is \code{"continuous"}. For interval monitoring, only equally spaced inspection is supported.
+#' @param delta if interval monitoring, interval length, a positive numeric value. Default value is \code{NULL}.
+#' @param theta21 initial value of \code{theta21} for the EM algorithm, can be both a numeric value or a vector of values. For an initial-value vector, the (ultimate) value with the largest log-likelihood is returned as the MLE.
+#' @param theta22 initial value of \code{theta22} for the EM algorithm, can be both a numeric value or a vector of values.
+#' @param p initial value of mixture proportion \code{p}, can be both a numeric value or a vector of values.
+#' @param maxit The maximum number of iterations allowed, an integer. Default value is \code{1000}.
+#' @param tol Tolerance limit for declaring algorithm convergence based on the change between two consecutive iterations. Default value is \code{1e-8}.
+#' @param language \code{"R"} or \code{"CPP"}. Only for bootstrap methods. Default value is \code{"CPP"}.
+#' @param parallel support parallel computation for multiple initial values, a logical value. Default value is \code{FALSE}.
+#' @param ncores the number of cores that are used in parallelization, a positive integer.
+#'
+#' @return An \code{MLEhSSALT} object that summarizes all relevant information, including: the observed number of censored failures under \code{s1} and \code{s2} (denoted \code{n1} and \code{n2}), the MLEs of the four model parameters, the log-likelihood value, the number of iterations in the adapted EM algorithm, convergence status of the algorithm, the sample’s censoring rate, and the posterior probabilities from the final iteration of the adapted EM algorithm.
+#'
+#' @examples
+#' sample <- rhSSALT(n = 30, tau = c(5, 10), theta1 = 10, theta21 = 5, theta22 = 8, p = 0.4)
+#' mle <- MLEhSSALT(data = sample$`censored sample`, n = 30, censoring = 1, tau = c(5, 10), theta21 = 5, theta22 = 8, p = 0.4)
+#'
+#' @export
+
+
 MLEhSSALT <- function( data, n, censoring = 1, tau, r = NULL, monitoring = "continuous",
                        delta = NULL, theta21, theta22, p, maxit = 1000, tol = 1e-8, 
                        language = "CPP", parallel = FALSE, ncores = 2) {

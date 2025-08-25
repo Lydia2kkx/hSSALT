@@ -1,3 +1,34 @@
+#' Confidence Intervals for hSSALT
+#'
+#' Provide interval estimation of a simple hSSALT model with exponential (continuous) or geometric (interval) distribution.
+#'
+#' @param data sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.
+#' @param n sample size, a positive integer.
+#' @param MLEhSSALT an \code{MLEhSSALT} object, returned by \code{MLEhSSALT()}.
+#' @param censoring \code{1} for Type-I censoring or \code{2} for Type-II censoring. Default value is \code{1}.
+#' @param tau If censoring type is \code{1}, \code{tau} is a vector with length 2; if censoring type is \code{2}, \code{tau} is a positive numeric value.
+#' @param r If censoring type is \code{2}, \code{r} provides the pre-specified number of failures, a positive integer.
+#' @param monitoring \code{"continuous"} or \code{"interval"}. Default value is \code{"continuous"}. For interval monitoring, only equally spaced inspection is supported.
+#' @param delta if interval monitoring, interval length, a positive numeric value. Default value is \code{NULL}.
+#' @param CImethod \code{"asymptotic"}, \code{"percentile"} or \code{"bca"} for asymptotic CIs, bootstrap percentile CIs and bootstrap bias-corrected and accelerated (BCa) bootstrap intervals. Default value is \code{"asymptotic"}.
+#' @param alpha significance level. Default value is \code{0.05}.
+#' @param B number of bootstrap repetitions, a positive integer, default value is \code{1000}.
+#' @param maxit The maximum number of iterations allowed, a positive integer. Only for bootstrap methods. Default value is \code{1000}.
+#' @param tol Tolerance limit for declaring algorithm convergence based on the change between two consecutive iterations. Only for bootstrap methods. Default value is \code{1e-8}.
+#' @param language \code{"R"} or \code{"CPP"}. Only for bootstrap methods. Default value is \code{"CPP"}.
+#' @param parallel support parallel computation, a logical value. Only for bootstrap methods. Default value is \code{FALSE}.
+#' @param ncores the number of cores that are used in parallelization, a positive integer.
+#'
+#' @return A \code{CIhSSALT} object that includes the type of returned CIs and the CIs for four parameters at a given significance level.
+#'
+#' @examples
+#' sample <- rhSSALT(n = 30, tau = c(5, 10), theta1 = 10, theta21 = 5, theta22 = 8, p = 0.4)
+#' MLE <- MLEhSSALT(data = sample$`censored sample`, n = 30, censoring = 1, tau = c(5, 10), theta21 = 5, theta22 = 8, p = 0.4)
+#' ci <- CIhSSALT(data = sample$`censored sample`, n = 30, MLEhSSALT = MLE, tau = c(5, 10))
+#'
+#' @export
+
+
 
 CIhSSALT <- function(data, n, MLEhSSALT_Obj, censoring = 1, tau, r=NULL, monitoring = "continuous",
                      delta = NULL, CImethod = "asymptotic", alpha = 0.05, B = 1000, maxit = 1000, 

@@ -46,7 +46,8 @@ MLE_Geo<- function( data , n , tau , delta, theta21 , theta22 , p, maxit, tol, l
   }
 
   n2 <- sum(n2j)
-
+  
+  #Avner: The next line is where the error lies
   data_starts <- rep(j-1, n2j)
   data_starts <- c(data_starts, rep(q2, n-n1-n2))
   d <- as.numeric(data_starts < q2)
