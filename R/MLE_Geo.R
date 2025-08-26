@@ -1,4 +1,4 @@
-MLE_Geo<- function( data , n , tau , delta, theta21 , theta22 , p, maxit, tol, language, parallel, ncores ){
+MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, language, parallel, ncores){
 
   # All Type I censoring
 
@@ -16,7 +16,7 @@ MLE_Geo<- function( data , n , tau , delta, theta21 , theta22 , p, maxit, tol, l
 
   if (n1 < 1){
     warning("No observation under the first stress level!")
-    mle1 =NA
+    mle1 = NA
   }else{
     ### tau1j are the right bounds of intervals
     tau1j <- seq(delta, tau[1], delta)
@@ -25,7 +25,8 @@ MLE_Geo<- function( data , n , tau , delta, theta21 , theta22 , p, maxit, tol, l
 
     ### Compute mle1
     ### Find the unique solution (it is proved to be unique) with uniroot function
-    mle1 <- uniroot(func_theta1_int, c(1, 1000), n1j = n1j, n1 = n1, n=n, hijk1=tau[1], tau1j=tau1j, tau1j0=tau1j0)$root
+    mle1 <- uniroot(func_theta1_int, c(1, 1000), n1j = n1j, n1 = n1, n = n, 
+                    tau1 = tau[1], tau1j=tau1j, tau1j0=tau1j0)$root
   }
 
   ### q2 is the number of intervals under the second stress level
@@ -37,12 +38,14 @@ MLE_Geo<- function( data , n , tau , delta, theta21 , theta22 , p, maxit, tol, l
 
   j <- 1:q2
 
-  # Alternative
-  if (n > sum(data)) { #data is censored with a tau2 that is smaller than the input tau2
-    n2j <- data[-(1:q1)] # censored
-    if(q2 > length(n2j)){n2j <- c(n2j, rep(0, q2-length(n2j)))}
+  # Alternative  #Yao: Please check why the comment is alternative? 
+  if (n > sum(data)) { #data is censored with a tau2 that is smaller than the input tau2 #Yao:?
+    n2j <- data[-c(1:q1)] # censored 
+    if(q2 > length(n2j)){n2j <- c(n2j, rep(0, q2-length(n2j)))} #Yao: why need this line?
   }else{
-    n2j <- data[-c((1:q1),((q1+q2+1):length(data)))]
+    n2j <- data[-c(1:q1)] #Yao: I changed this, the previous version 
+    #data[-c((1:q1),((q1+q2+1):length(data)))] is wrong, since in this case, all failures are observed,
+    #q1+q2 = length(data), q1+q2+1 > length(data), this causes the last element is missing in n2j
   }
 
   n2 <- sum(n2j)
@@ -52,7 +55,7 @@ MLE_Geo<- function( data , n , tau , delta, theta21 , theta22 , p, maxit, tol, l
   data_starts <- c(data_starts, rep(q2, n-n1-n2))
   d <- as.numeric(data_starts < q2)
 
-  parameter_starts <- data.frame(omega1=p, theta21=theta21, theta22)
+  parameter_starts <- data.frame(omega1=p, theta21=theta21, theta22=theta22)
 
   if(language == "CPP") {
 
