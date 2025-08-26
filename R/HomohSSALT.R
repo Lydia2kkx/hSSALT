@@ -2,6 +2,8 @@
 #'
 #' Perform a homogeneity test under the second stress level \code{s2} of a simple hSSALT model with exponential (continuous) distribution.
 #'
+#' @usage HomohSSALT(data, n, censoring=1, tau, r, alpha = 0.05, M = 10000)
+#'
 #' @param data sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.
 #' @param n sample size, a positive integer.
 #' @param censoring \code{1} for Type-I censoring or \code{2} for Type-II censoring. Default value is \code{1}.
@@ -13,8 +15,7 @@
 #' @return An \code{hSSALTtest} object containing a hypothesis test table that reports the test statistic, the simulated critical value at the given significance level, the alternative hypothesis, and the test decision.
 #'
 #' @examples
-#' sample <- rhSSALT(n = 30, tau = c(5, 10), theta1 = 10, theta21 = 5, theta22 = 8, p = 0.4)
-#' test <- HomohSSALT(data = sample$`censored sample`, n = 30, tau = c(5, 10))
+#' test <- HomohSSALT(data = hSSALTdata$data, n = 35, tau = c(8, 20))
 #'
 #' @export
 
