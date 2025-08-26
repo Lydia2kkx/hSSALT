@@ -2,9 +2,14 @@
 #'
 #' Provide interval estimation of a simple hSSALT model with exponential (continuous) or geometric (interval) distribution.
 #'
+#' @usage CIhSSALT(data, n, MLEhSSALT_Obj, censoring = 1, tau, r = NULL, 
+#'          monitoring = "continuous", delta = NULL, CImethod = "asymptotic", 
+#'          alpha = 0.05, B = 1000, maxit = 1000, tol = 1e-8, language = "CPP", 
+#'          parallel = FALSE, ncores)
+#'
 #' @param data sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.
 #' @param n sample size, a positive integer.
-#' @param MLEhSSALT an \code{MLEhSSALT} object, returned by \code{MLEhSSALT()}.
+#' @param MLEhSSALT_Obj an \code{MLEhSSALT} object, returned by \code{MLEhSSALT()}.
 #' @param censoring \code{1} for Type-I censoring or \code{2} for Type-II censoring. Default value is \code{1}.
 #' @param tau If censoring type is \code{1}, \code{tau} is a vector with length 2; if censoring type is \code{2}, \code{tau} is a positive numeric value.
 #' @param r If censoring type is \code{2}, \code{r} provides the pre-specified number of failures, a positive integer.
@@ -22,9 +27,9 @@
 #' @return A \code{CIhSSALT} object that includes the type of returned CIs and the CIs for four parameters at a given significance level.
 #'
 #' @examples
-#' sample <- rhSSALT(n = 30, tau = c(5, 10), theta1 = 10, theta21 = 5, theta22 = 8, p = 0.4)
-#' MLE <- MLEhSSALT(data = sample$`censored sample`, n = 30, censoring = 1, tau = c(5, 10), theta21 = 5, theta22 = 8, p = 0.4)
-#' ci <- CIhSSALT(data = sample$`censored sample`, n = 30, MLEhSSALT = MLE, tau = c(5, 10))
+#' MLE <- MLEhSSALT(data = hSSALTdata$data, n = 35, censoring = 1, tau = c(8, 20),
+#'          theta21 = 1, theta22 = 8, p = 0.4)
+#' ci <- CIhSSALT(data = hSSALTdata$data, n = 35, MLEhSSALT = MLE, tau = c(8, 20))
 #'
 #' @export
 
@@ -32,7 +37,7 @@
 
 CIhSSALT <- function(data, n, MLEhSSALT_Obj, censoring = 1, tau, r=NULL, monitoring = "continuous",
                      delta = NULL, CImethod = "asymptotic", alpha = 0.05, B = 1000, maxit = 1000, 
-                     tol=1e-8, language = "CPP", parallel = FALSE, ncores = 2, grid = FALSE){
+                     tol=1e-8, language = "CPP", parallel = FALSE, ncores, grid = FALSE){
   
   theta1 <- MLEhSSALT_Obj$mle$theta1
   theta21 <- MLEhSSALT_Obj$mle$theta21
