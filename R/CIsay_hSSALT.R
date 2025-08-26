@@ -79,11 +79,10 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         
         ###The case with a relatively large sample size (e.g., n = 50)
         ###High precision computation is needed
-        library(Rmpfr)
-        T1_simu <- mpfr(1, 256)*data
+        T1_simu <- Rmpfr::mpfr(1, 256)*data
         n1 <- sum(T1_simu <= tau[1])
         T1 <- sort(T1_simu[T1_simu <= tau[1]])
-        mle1 <- mpfr(sum(T1, (n-n1)*tau[1]) / n1, 256)
+        mle1 <- Rmpfr::mpfr(sum(T1, (n-n1)*tau[1]) / n1, 256)
         
         p1 <- 1 - exp(-tau[1]/mle1)
         p2 <- exp(-tau[1]/mle1) * (1 - p*exp(-(tau[2]-tau[1])/theta21) - (1-p)*exp(-(tau[2]-tau[1])/theta22))
@@ -96,8 +95,8 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
           
           for (i in 1:(n-1)) {
             for (k in 0:i) {
-              n <- mpfr(n, 256)
-              C_ik <- (-1)^k * chooseMpfr(n, i) * chooseMpfr(i, k) * ((1 - p1)^(n-i) - p3^(n-i)) * (1-p1)^k
+              n <- Rmpfr::mpfr(n, 256)
+              C_ik <- (-1)^k * Rmpfr::chooseMpfr(n, i) * Rmpfr::chooseMpfr(i, k) * ((1 - p1)^(n-i) - p3^(n-i)) * (1-p1)^k
               tau_ik <- tau[1] / i * (n - i + k)
               re_ik <- C_ik *tau_ik
               y <- y + re_ik
@@ -187,23 +186,22 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         #####################################
         ###The case with a relatively large sample size (e.g., n = 50)
         ###High precision computation is needed
-        library(Rmpfr)
         #T1_simu <- mpfr(rexp(n, rate = 1/theta1), 256) # 256 can be increased
-        T1_simu <- mpfr(1, 256)*data
+        T1_simu <- Rmpfr::mpfr(1, 256)*data
         n1 <- sum(T1_simu <= tau)
         T1 <- sort(T1_simu[T1_simu <= tau])
-        mle1 <- mpfr(sum(T1, (n-n1)*tau) / n1, 256)
+        mle1 <- Rmpfr::mpfr(sum(T1, (n-n1)*tau) / n1, 256)
         ###The modified version of bias
         bias_Mpfr_modify <- function(x, n, r){
           y <- 0
           p_j_sum <- 0
           for (i in 1:(r-1)) {
-            med <- chooseMpfr(n, i)*(1 - exp(-tau/x))^i*exp(-tau/x)^(n-i)
+            med <- Rmpfr::chooseMpfr(n, i)*(1 - exp(-tau/x))^i*exp(-tau/x)^(n-i)
             p_j_sum <- p_j_sum + med
           }
           for (j in 1:(r-1)) {
             for (k in 0:j) {
-              c_jk <- (-1)^k / p_j_sum * chooseMpfr(n, j) * chooseMpfr(j, k) * exp(-tau*(n - j + k)/x)
+              c_jk <- (-1)^k / p_j_sum * Rmpfr::chooseMpfr(n, j) * Rmpfr::chooseMpfr(j, k) * exp(-tau*(n - j + k)/x)
               tau_jk <- tau / j * (n - j + k)
               re_jk <- c_jk *tau_jk
               y <- y + re_jk
@@ -214,7 +212,7 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         
         V1 <- mle1^2/n1
         
-        bias <- bias_Mpfr_modify(mle1, n = mpfr(n, 256), r = r)  #n = mpfr(n, 512) when n = 200
+        bias <- bias_Mpfr_modify(mle1, n = Rmpfr::mpfr(n, 256), r = r)  #n = mpfr(n, 512) when n = 200
         theta1_approxCI_low <- mle1 - bias - qnorm(1-alpha/2)*sqrt(V1)
         theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
         theta1_approxCI_low <- sapply(theta1_approxCI_low[1], asNumeric)
