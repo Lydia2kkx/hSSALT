@@ -4,7 +4,7 @@
 #'
 #' @usage MLEhSSALT(data, n, censoring = 1, tau, r = NULL, monitoring = "continuous", 
 #'           delta = NULL, theta21, theta22, p, maxit = 1000, 
-#'           tol = 1e-8, language = "CPP", parallel = FALSE, ncores)
+#'           tol = 1e-8, language = "CPP", parallel = FALSE, ncores = 2)
 #'
 #' @param data sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.
 #' @param n sample size, a positive integer.
@@ -31,9 +31,9 @@
 #' @export
 
 
-MLEhSSALT <- function( data, n, censoring = 1, tau, r = NULL, monitoring = "continuous",
-                       delta = NULL, theta21, theta22, p, maxit = 1000, tol = 1e-8, 
-                       language = "CPP", parallel = FALSE, ncores) {
+MLEhSSALT <- function(data, n, censoring = 1, tau, r = NULL, monitoring = "continuous",
+                      delta = NULL, theta21, theta22, p, maxit = 1000, tol = 1e-8, 
+                      language = "CPP", parallel = FALSE, ncores = 2) {
   
   ### Part 1: Check Validity of Given Input
   ###Check the input of parameter n
