@@ -18,3 +18,19 @@ License: What license is it under?
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
+Depends: 
+    R (>= 3.5)
+LinkingTo: 
+    Rmpfr,
+    numDeriv,
+    parallel,
+    Rcpp,
+    RcppArmadillo,
+    BH
+Imports: 
+    Rmpfr,
+    numDeriv,
+    parallel,
+    Rcpp (>= 1.0.10),
+    RcppArmadillo (>= 0.12.2),
+    BH
