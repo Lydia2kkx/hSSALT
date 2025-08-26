@@ -159,13 +159,13 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       n1j <- jackknife1[[i]]
       tau1j <- seq(delta, tau[1], delta)
       tau1j0 <- tau1j - delta
-      mle_1new <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes", n=n,n1j = n1j, n1 = n1-1, hijk1=tau[1],tau1j0 = tau1j0, tau1j = tau1j)$root
+      mle_1new <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes", n=n,n1j = n1j, n1 = n1-1, tau1 = tau[1],tau1j0 = tau1j0, tau1j = tau1j)$root
       mle1ij <- c(mle1ij, mle_1new)
     }
     
     n1j <- data[1:q1]
     
-    mle1_o <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes",n=n, n1j = n1j, n1 = n1+1, tau1j0 = tau1j0, tau1j = tau1j,hijk1=tau[1])$root
+    mle1_o <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes",n=n, n1j = n1j, n1 = n1+1, tau1j0 = tau1j0, tau1j = tau1j, tau1 = tau[1])$root
     mle1ij <- c(mle1ij, rep(mle1_o, n2))
     mle1i <- mean(mle1ij)
     a1 <- sum((mle1i - mle1ij)^3) / (6 * (sum((mle1i - mle1ij)^2))^1.5)
