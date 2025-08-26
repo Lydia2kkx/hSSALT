@@ -1,0 +1,32 @@
+#' A simulated simple hSSALT dataset based on Balakrishnan, Xie & Kundu (2009)
+#'
+#' @name hSSALTdata
+#'
+#' @docType data
+#'
+#'
+#' @usage data(hSSALTdata)
+#'
+#' @description A list of simulated complete data based on Balakrishnan, Xie & Kundu (2009) for a simple hSSALT model.
+#'
+#' @format A list with 5 elements:
+#' \describe{
+#'   \item{data}{A numeric vector containing the simulated failure times.}
+#'   \item{tau}{A numeric value indicating the switching point where the stress level increases from \code{s1} to \code{s2}.}
+#'   \item{n}{An integer specifying the sample size.}
+#'   \item{params}{The true parameter values used to generate the simulated data.}
+#'   \item{complete}{A logical value indicating whether the dataset is complete (i.e., without censoring).}
+#' }
+#' 
+#' @keywords dataset
+#'
+#' @source N. Balakrishnan, Q. Xie, D. Kundu. Exact inference for a simple step-stress model from the exponential
+#'         distribution under time constraint. Annals of the Institute of Statistical Mathematics, Vol. 61, pp. 251-274, 2009.
+#'
+#' @seealso \code{\link{MLEhSSALT}} \code{\link{CIhSSALT}} \code{\link{HomohSSALT}}
+#'
+#' @examples
+#' data(hSSALTdata)
+"hSSALTdata"
+
+
