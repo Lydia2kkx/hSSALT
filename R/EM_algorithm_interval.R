@@ -1,7 +1,7 @@
 ### Compute mle1 in interval case
-func_theta1_int <- function(x, n ,n1j, n1, hijk1, tau1j, tau1j0){
+func_theta1_int <- function(x, n ,n1j, n1, tau1, tau1j, tau1j0){
   ### Vector calculation
-  sum(n1j*(exp(-tau1j0/x)*tau1j0 - exp(-tau1j/x)*tau1j) / (exp(-tau1j0/x) - exp(-tau1j/x))) + hijk1*(n-n1)
+  sum(n1j*(exp(-tau1j0/x)*tau1j0 - exp(-tau1j/x)*tau1j) / (exp(-tau1j0/x) - exp(-tau1j/x))) + tau1*(n-n1)
 }
 
 EM_algorithm_interval <- function(ind, data , N, delta , d, parameter_starts, q2, tol){
