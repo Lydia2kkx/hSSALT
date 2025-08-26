@@ -4,7 +4,7 @@
 \alias{HomohSSALT}
 \title{Homogeneity test for hSSALT}
 \usage{
-HomohSSALT(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 10000)
+HomohSSALT(data, n, censoring=1, tau, r, alpha = 0.05, M = 10000)
 }
 \arguments{
 \item{data}{sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.}
@@ -28,7 +28,6 @@ An \code{hSSALTtest} object containing a hypothesis test table that reports the 
 Perform a homogeneity test under the second stress level \code{s2} of a simple hSSALT model with exponential (continuous) distribution.
 }
 \examples{
-sample <- rhSSALT(n = 30, tau = c(5, 10), theta1 = 10, theta21 = 5, theta22 = 8, p = 0.4)
-test <- HomohSSALT(data = sample$`censored sample`, n = 30, tau = c(5, 10))
+test <- HomohSSALT(data = hSSALTdata$data, n = 35, tau = c(8, 20))
 
 }
