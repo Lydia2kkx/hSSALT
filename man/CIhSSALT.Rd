@@ -7,7 +7,7 @@
 CIhSSALT(data, n, MLEhSSALT_Obj, censoring = 1, tau, r = NULL, 
          monitoring = "continuous", delta = NULL, CImethod = "asymptotic", 
          alpha = 0.05, B = 1000, maxit = 1000, tol = 1e-8, language = "CPP", 
-         parallel = FALSE, ncores)
+         parallel = FALSE, ncores = 2)
 }
 \arguments{
 \item{data}{sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.}
