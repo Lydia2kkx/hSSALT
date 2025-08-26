@@ -67,7 +67,7 @@ MLE_Geo<- function( data , n , tau , delta, theta21 , theta22 , p, maxit, tol, l
 
       if(parallel == TRUE){
       cl <- parallel::makeCluster(getOption("cl.cores", ncores))
-      EM_mle <- parLapply(cl, 1:nrow(parameter_starts), EM_algorithm_interval_arma, data = data_starts, N = maxit,
+      EM_mle <- parallel::parLapply(cl, 1:nrow(parameter_starts), EM_algorithm_interval_arma, data = data_starts, N = maxit,
                 delta = delta, d=d, parameter_starts=parameter_starts, q2=q2, tol=tol)
       parallel::stopCluster(cl)
 
@@ -121,7 +121,7 @@ MLE_Geo<- function( data , n , tau , delta, theta21 , theta22 , p, maxit, tol, l
 
       if(parallel == TRUE){
         cl <- parallel::makeCluster(getOption("cl.cores", ncores))
-        EM_mle <- parLapply(cl, 1:nrow(parameter_starts), EM_algorithm_interval, data = data_starts, N = maxit,
+        EM_mle <- parallel::parLapply(cl, 1:nrow(parameter_starts), EM_algorithm_interval, data = data_starts, N = maxit,
                             delta = delta, d=d, parameter_starts=parameter_starts, q2=q2, tol = tol)
         parallel::stopCluster(cl)
 
