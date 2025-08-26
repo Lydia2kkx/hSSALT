@@ -4,23 +4,9 @@
 \alias{MLEhSSALT}
 \title{Maximum Likelihood Estimation for hSSALT}
 \usage{
-MLEhSSALT(
-  data,
-  n,
-  censoring = 1,
-  tau,
-  r = NULL,
-  monitoring = "continuous",
-  delta = NULL,
-  theta21,
-  theta22,
-  p,
-  maxit = 1000,
-  tol = 1e-08,
-  language = "CPP",
-  parallel = FALSE,
-  ncores = 2
-)
+MLEhSSALT(data, n, censoring = 1, tau, r = NULL, monitoring = "continuous", 
+          delta = NULL, theta21, theta22, p, maxit = 1000, 
+          tol = 1e-8, language = "CPP", parallel = FALSE, ncores)
 }
 \arguments{
 \item{data}{sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.}
@@ -53,14 +39,14 @@ MLEhSSALT(
 
 \item{ncores}{the number of cores that are used in parallelization, a positive integer.}
 }
-\value{
-An \code{MLEhSSALT} object that summarizes all relevant information, including: the observed number of censored failures under \code{s1} and \code{s2} (denoted \code{n1} and \code{n2}), the MLEs of the four model parameters, the log-likelihood value, the number of iterations in the adapted EM algorithm, convergence status of the algorithm, the sample’s censoring rate, and the posterior probabilities from the final iteration of the adapted EM algorithm.
-}
 \description{
 Provide point estimation of a simple hSSALT model with exponential (continuous) or geometric (interval) distribution.
 }
 \examples{
-sample <- rhSSALT(n = 30, tau = c(5, 10), theta1 = 10, theta21 = 5, theta22 = 8, p = 0.4)
-mle <- MLEhSSALT(data = sample$`censored sample`, n = 30, censoring = 1, tau = c(5, 10), theta21 = 5, theta22 = 8, p = 0.4)
+mle <- MLEhSSALT(data = hSSALTdata$data, n = 35, censoring = 1, tau = c(8, 20),
+       theta21 = 1, theta22 = 8, p = 0.4)
 
+}
+\seealso{
+\code{\link{CIhSSALT}}
 }
