@@ -4,18 +4,8 @@
 \alias{rhSSALT}
 \title{Simulate a simple hSSALT random dataset}
 \usage{
-rhSSALT(
-  n,
-  censoring = 1,
-  tau,
-  r = NULL,
-  monitoring = "continuous",
-  delta = NULL,
-  theta1,
-  theta21,
-  theta22,
-  p
-)
+rhSSALT(n, censoring = 1, tau, r = NULL, monitoring = "continuous",
+       delta = NULL, theta1, theta21, theta22, p)
 }
 \arguments{
 \item{n}{sample size, an integer.}
@@ -45,6 +35,7 @@ A list consisting of four sub-lists: censored sample, the observed number of cen
 Simulate a simple hSSALT random dataset with exponential (continuous) or geometric (interval) distribution.
 }
 \examples{
-sample <- rhSSALT(n = 30, tau = c(5, 10), theta1 = 10, theta21 = 5, theta22 = 8, p = 0.4)
+sample <- rhSSALT(n = 30, tau = c(5, 10), theta1 = 10, theta21 = 5,
+         theta22 = 8, p = 0.4)
 
 }
