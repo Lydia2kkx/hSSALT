@@ -69,7 +69,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       if(language == "CPP"){
         if(parallel == TRUE){
           cl <- parallel::makeCluster(getOption("cl.cores", ncores))
-          model_list_new <- parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d, N=maxit,
+          model_list_new <- parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d, N=maxit,
                                       parameter_starts = parameter_starts, tol = tol)
           parallel::stopCluster(cl)
         }else{
@@ -79,7 +79,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       }else{
         if(parallel == TRUE){
           cl <- parallel::makeCluster(getOption("cl.cores", ncores))
-          model_list_new <- parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored, data = t22_new - tau[1], d=d, N=maxit,
+          model_list_new <- parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored, data = t22_new - tau[1], d=d, N=maxit,
                                       parameter_starts = parameter_starts, tol = tol)
           parallel::stopCluster(cl)
         }else{
