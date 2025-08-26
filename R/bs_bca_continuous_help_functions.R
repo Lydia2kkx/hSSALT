@@ -27,9 +27,6 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
   iter <- 1 ## iteration counter (how many times we need to obtain B times valid results)
   Results <- list()
   
-  non_convergence_counter <- 0
-  convergence_counter <- 0
-  
   while (j <= B){
     
     sample <- rhSSALT(n, 1, tau = tau, theta1 = theta1, theta21 = theta21, theta22 = theta22,
@@ -52,10 +49,8 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
     
     if (MLE_results$message=="not convergent") {
       iter <- iter + 1
-      non_convergence_counter <- non_convergence_counter + 1
       next
     }
-    convergence_counter <- convergence_counter +1
     
     if(is.na(Estimate_df$p1) || is.na(Estimate_df$theta1) || is.na(Estimate_df$theta22)){ ###If all NAs in prob1, next iteration
       iter <- iter + 1
@@ -91,10 +86,6 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
     iter <- iter + 1
     j <- j + 1 ### increase the iteration counter
   }
-  
-  print(non_convergence_counter)
-  print(convergence_counter)
-  stop("WHATS UPPP")
   
   ####Omit NAs in the result list
   Results_omit <- lapply(Results, na.omit)
