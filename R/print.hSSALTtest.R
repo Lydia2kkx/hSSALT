@@ -1,3 +1,4 @@
+#' @export
 print.hSSALTtest <- function(x, ...) {
   # Standard htest output style
   cat("\n", x$method, "\n\n", sep = "")
