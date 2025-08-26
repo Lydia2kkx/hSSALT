@@ -4,30 +4,17 @@
 \alias{CIhSSALT}
 \title{Confidence Intervals for hSSALT}
 \usage{
-CIhSSALT(
-  data,
-  n,
-  MLEhSSALT_Obj,
-  censoring = 1,
-  tau,
-  r = NULL,
-  monitoring = "continuous",
-  delta = NULL,
-  CImethod = "asymptotic",
-  alpha = 0.05,
-  B = 1000,
-  maxit = 1000,
-  tol = 1e-08,
-  language = "CPP",
-  parallel = FALSE,
-  ncores = 2,
-  grid = FALSE
-)
+CIhSSALT(data, n, MLEhSSALT_Obj, censoring = 1, tau, r = NULL, 
+         monitoring = "continuous", delta = NULL, CImethod = "asymptotic", 
+         alpha = 0.05, B = 1000, maxit = 1000, tol = 1e-8, language = "CPP", 
+         parallel = FALSE, ncores)
 }
 \arguments{
 \item{data}{sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.}
 
 \item{n}{sample size, a positive integer.}
+
+\item{MLEhSSALT_Obj}{an \code{MLEhSSALT} object, returned by \code{MLEhSSALT()}.}
 
 \item{censoring}{\code{1} for Type-I censoring or \code{2} for Type-II censoring. Default value is \code{1}.}
 
@@ -54,8 +41,6 @@ CIhSSALT(
 \item{parallel}{support parallel computation, a logical value. Only for bootstrap methods. Default value is \code{FALSE}.}
 
 \item{ncores}{the number of cores that are used in parallelization, a positive integer.}
-
-\item{MLEhSSALT}{an \code{MLEhSSALT} object, returned by \code{MLEhSSALT()}.}
 }
 \value{
 A \code{CIhSSALT} object that includes the type of returned CIs and the CIs for four parameters at a given significance level.
@@ -64,8 +49,8 @@ A \code{CIhSSALT} object that includes the type of returned CIs and the CIs for 
 Provide interval estimation of a simple hSSALT model with exponential (continuous) or geometric (interval) distribution.
 }
 \examples{
-sample <- rhSSALT(n = 30, tau = c(5, 10), theta1 = 10, theta21 = 5, theta22 = 8, p = 0.4)
-MLE <- MLEhSSALT(data = sample$`censored sample`, n = 30, censoring = 1, tau = c(5, 10), theta21 = 5, theta22 = 8, p = 0.4)
-ci <- CIhSSALT(data = sample$`censored sample`, n = 30, MLEhSSALT = MLE, tau = c(5, 10))
+MLE <- MLEhSSALT(data = hSSALTdata$data, n = 35, censoring = 1, tau = c(8, 20),
+         theta21 = 1, theta22 = 8, p = 0.4)
+ci <- CIhSSALT(data = hSSALTdata$data, n = 35, MLEhSSALT = MLE, tau = c(8, 20))
 
 }
