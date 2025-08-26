@@ -2,6 +2,9 @@
 #'
 #' Simulate a simple hSSALT random dataset with exponential (continuous) or geometric (interval) distribution.
 #'
+#' @usage rhSSALT(n, censoring = 1, tau, r = NULL, monitoring = "continuous",
+#'        delta = NULL, theta1, theta21, theta22, p)
+#'
 #' @param n sample size, an integer.
 #' @param censoring \code{1} for Type-I censoring or \code{2} for Type-II censoring. Default value is \code{1}.
 #' @param tau If censoring type is \code{1}, \code{tau} is a vector with length 2; if censoring type is \code{2}, \code{tau} is a positive numeric value.
@@ -16,7 +19,8 @@
 #' @return A list consisting of four sub-lists: censored sample, the observed number of censored failures under \code{s1} and \code{s2}, complete sample, the observed number of failures under \code{s1} and \code{s2}.
 #'
 #' @examples
-#' sample <- rhSSALT(n = 30, tau = c(5, 10), theta1 = 10, theta21 = 5, theta22 = 8, p = 0.4)
+#' sample <- rhSSALT(n = 30, tau = c(5, 10), theta1 = 10, theta21 = 5,
+#'          theta22 = 8, p = 0.4)
 #'
 #' @export
 
