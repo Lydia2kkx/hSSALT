@@ -3,6 +3,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
                         theta1, theta21, theta22, p, maxit, tol, language, parallel, ncores, grid){
   
   #Avner: I'm not sure if this is the right way to go about dealing with Type-II censoring
+  #Yao: I think it is correct. 
   if(censoring==2){
     tau <- c(tau[1], data[r])
   }
@@ -122,13 +123,15 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
     
     if (n > sum(data)) { #data is censored with a tau2 that is smaller than the input tau2
       n2j <- data[-(1:q1)] # censored
-      if(q2 > length(n2j)){n2j <- c(n2j, rep(0, q2-length(n2j)))}
-    }else{n2j <- data[-c((1:q1),((q1+q2+1):length(data)))]}
+      if(q2 > length(n2j)){n2j <- c(n2j, rep(0, q2-length(n2j)))} #Yao: Why this line? 
+    }else{n2j <- data[(q1+1):(q1+q2)]} #Yao: I changed this line, since the previous version
+    #n2j <- data[-c((1:q1),((q1+q2+1):length(data)))] is wrong. If all failures are observed before tau2,
+    #then q1+q2 = n, q1+q2+1 = n+1. (same as in MLE_Geo.R)
     
     n2 <- sum(n2j)
     
-    n21 <- round(p*(n-n1))
-    n22 <- sum(data)-n1-n21
+    n21 <- round(p*(n-n1)) #Yao: is n21 needed?
+    n22 <- sum(data)-n1-n21 #Yao: is n22 needed?
     
     jackknife_samples_interval <- list()
     index <- 1
@@ -142,11 +145,13 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
         }
       }
     }
-
+    
+    #Yao: jackknife1 can also just be lapply(jackknife_samples_interval[1:n1], function(x) x[1:q1])?
     jackknife1 <- lapply(jackknife_samples_interval[1:n1], function(tbl) {
       upper_bounds <- as.numeric(sub("\\((.+),(.+)\\]", "\\2", names(tbl)))
       tbl[upper_bounds <= tau[1]]
     })
+    #Yao: jackknife2 can also just be lapply(jackknife_samples_interval[(n1+1):(n1+n2)], function(x) x[(q1+1):(q1+q2)])?
     jackknife2 <- lapply(jackknife_samples_interval[(n1+1):(n1+n2)], function(tbl) {
       upper_bounds <- as.numeric(sub("\\((.+),(.+)\\]", "\\2", names(tbl)))
       lower_bounds <- as.numeric(sub("\\((.+),(.+)\\]", "\\1", names(tbl)))
@@ -172,7 +177,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
     
     ####Calculation of a2s
     Re <- list()
-    for (i in 1 : n2) { #Yao: This (length(T2_combine) - (n-n1-n2)) should also be changed
+    for (i in 1 : n2) {
       T2_new <- jackknife2[[i]]
       d <- c(1*(T2_new < tau[2]), rep(0, n-n1-n2))
       data_new <- c(rep((1:q2)-1, n2j), rep(q2, max(0,n-1-n1-sum(d))))
