@@ -26,10 +26,15 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
     ### q2 is the number of intervals under the second stress level
     q2 <- (tau[2]-tau[1])/delta
     
-    if (n > sum(data)) { #data is censored with a tau2 that is smaller than the input tau2
-      n2j <- data[-(1:q1)] # censored
-      if(q2 > length(n2j)){n2j <- c(n2j, rep(0, q2-length(n2j)))}
-    }else{n2j <- data[-c((1:q1),((q1+q2+1):length(data)))]}
+    # if (n > sum(data)) { #data is censored with a tau2 that is smaller than the input tau2
+    #   n2j <- data[-(1:q1)] # censored
+    #   if(q2 > length(n2j)){n2j <- c(n2j, rep(0, q2-length(n2j)))}
+    # }else{n2j <- data[-c((1:q1),((q1+q2+1):length(data)))]}
+    
+    #Avner: My version of the above code - Added after testing 20250901
+    n2j <- data[(q1+1):(q1+q2)] 
+    if(q1+q2 > length(data)){n2j[(length(data)-q1+1):q2] <- 0}
+    n2 <- sum(n2j)
     
     Secondderivative_O11 <- function(theta1, tau1j, tau1j0, n1j, n1, tau1){
       -2/(theta1^3)*sum(n1j*(tau1j0*exp(-tau1j0/theta1)-tau1j*exp(-tau1j/theta1))/(exp(-tau1j0/theta1)-exp(-tau1j/theta1))) + 
@@ -39,7 +44,6 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
     }
     O11 <- -Secondderivative_O11(theta1 = theta1, tau1j, tau1j0, n1j, n1, tau1 = tau[1])
     V_theta1 <- 1/O11
-    V_theta1
     
     # alpha is the significance level 
     theta1_approxCI_low <- theta1 - qnorm(1-alpha/2)*sqrt(V_theta1)
@@ -298,13 +302,15 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
   theta22_approxCI_low <- ifelse(theta22_approxCI_low < 0, 0L, theta22_approxCI_low)
   theta22_approxCI_up <- theta22 + qnorm(1-alpha/2)*sqrt(Vtheta22)
   
-  lower_bound <- c(theta1_approxCI_low,theta21_approxCI_low,theta22_approxCI_low,p_approxCI_low)
-  upper_bound <- c(theta1_approxCI_up,theta21_approxCI_up,theta22_approxCI_up,p_approxCI_up)
+  #Confidence Intervals
+  theta1_CI <- c(theta1_approxCI_low,theta1_approxCI_up)
+  theta21_CI <- c(theta21_approxCI_low,theta21_approxCI_up)
+  theta22_CI <- c(theta22_approxCI_low,theta22_approxCI_up)
+  p_CI <- c(p_approxCI_low,p_approxCI_up)
   
-  conf_ints <- cbind(lower_bound,upper_bound)
-  row.names(conf_ints) <- c("theta1","theta21","theta22","p")
-  
-  return(conf_ints)
+  output <- list(theta1=theta1_CI, theta21=theta21_CI, theta22=theta22_CI,p=p_CI, B=NA, j=NA, alpha=alpha, type="Asymptotic")
+  class(output) <- "CIhSSALT"
+  return(output)
   
   
 }

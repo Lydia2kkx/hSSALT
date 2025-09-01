@@ -2,15 +2,16 @@
 CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
                         theta1, theta21, theta22, p, maxit, tol, language, parallel, ncores, grid){
   
-  #Avner: I'm not sure if this is the right way to go about dealing with Type-II censoring
-  #Yao: I think it is correct. 
   if(censoring==2){
     tau <- c(tau[1], data[r])
   }
 
-  bootstrap_distri <- bootstrap_distribution(data, n, monitoring = monitoring, theta1 = theta1, theta21 = theta21,
+  bootstrap_distri_list <- bootstrap_distribution(data, n, monitoring = monitoring, theta1 = theta1, theta21 = theta21,
                                              theta22 = theta22, p = p, censoring, tau, r, B, delta = delta, maxit, tol, 
                                              language, parallel, ncores, grid)
+  
+  bootstrap_distri <- bootstrap_distri_list[[1]]
+  num_of_iterations <- bootstrap_distri_list[[2]]
 
   ### alpha is the significant level, take theta1 as an example
   # quantile(bootstrap_distri$theta1, c(alpha/2, 1-alpha/2))
@@ -70,22 +71,22 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       if(language == "CPP"){
         if(parallel == TRUE){
           cl <- parallel::makeCluster(getOption("cl.cores", ncores))
-          model_list_new <- parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d, N=maxit,
-                                      parameter_starts = parameter_starts, tol = tol)
+          model_list_new <- suppressWarnings(parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d, N=maxit,
+                                      parameter_starts = parameter_starts, tol = tol))
           parallel::stopCluster(cl)
         }else{
-          model_list_new <- lapply(1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d, N=maxit,
-                                   parameter_starts = parameter_starts, tol = tol)
+          model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d, N=maxit,
+                                   parameter_starts = parameter_starts, tol = tol))
         }
       }else{
         if(parallel == TRUE){
           cl <- parallel::makeCluster(getOption("cl.cores", ncores))
-          model_list_new <- parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored, data = t22_new - tau[1], d=d, N=maxit,
-                                      parameter_starts = parameter_starts, tol = tol)
+          model_list_new <- suppressWarnings(parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored, data = t22_new - tau[1], d=d, N=maxit,
+                                      parameter_starts = parameter_starts, tol = tol))
           parallel::stopCluster(cl)
         }else{
-          model_list_new <- lapply(1:nrow(parameter_starts), EM_algorithm_censored, data = t22_new - tau[1], d=d, N=maxit,
-                                   parameter_starts = parameter_starts, tol = tol)
+          model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_censored, data = t22_new - tau[1], d=d, N=maxit,
+                                   parameter_starts = parameter_starts, tol = tol)) #Avner: There were some warnings here too.
         }
         
       }
@@ -121,17 +122,17 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
     ### q2 is the number of intervals under the second stress level
     q2 <- (tau[2]-tau[1])/delta
     
-    if (n > sum(data)) { #data is censored with a tau2 that is smaller than the input tau2
-      n2j <- data[-(1:q1)] # censored
-      if(q2 > length(n2j)){n2j <- c(n2j, rep(0, q2-length(n2j)))} #Yao: Why this line? 
-    }else{n2j <- data[(q1+1):(q1+q2)]} #Yao: I changed this line, since the previous version
-    #n2j <- data[-c((1:q1),((q1+q2+1):length(data)))] is wrong. If all failures are observed before tau2,
-    #then q1+q2 = n, q1+q2+1 = n+1. (same as in MLE_Geo.R)
+    # if (n > sum(data)) { #data is censored with a tau2 that is smaller than the input tau2
+    #   n2j <- data[-(1:q1)] # censored
+    #   if(q2 > length(n2j)){n2j <- c(n2j, rep(0, q2-length(n2j)))} #Yao: Why this line? 
+    # }else{n2j <- data[(q1+1):(q1+q2)]} #Yao: I changed this line, since the previous version
+    # #n2j <- data[-c((1:q1),((q1+q2+1):length(data)))] is wrong. If all failures are observed before tau2,
+    # #then q1+q2 = n, q1+q2+1 = n+1. (same as in MLE_Geo.R)
     
+    #Avner: My version of above code. Should work with full data. - Changed after testing 20250901
+    n2j <- data[(q1+1):(q1+q2)]
+    if(q1+q2 > length(data)){n2j[(length(data)-q1+1):q2] <- 0}
     n2 <- sum(n2j)
-    
-    n21 <- round(p*(n-n1)) #Yao: is n21 needed?
-    n22 <- sum(data)-n1-n21 #Yao: is n22 needed?
     
     jackknife_samples_interval <- list()
     index <- 1
@@ -146,29 +147,17 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       }
     }
     
-    #Yao: jackknife1 can also just be lapply(jackknife_samples_interval[1:n1], function(x) x[1:q1])?
-    jackknife1 <- lapply(jackknife_samples_interval[1:n1], function(tbl) {
-      upper_bounds <- as.numeric(sub("\\((.+),(.+)\\]", "\\2", names(tbl)))
-      tbl[upper_bounds <= tau[1]]
-    })
-    #Yao: jackknife2 can also just be lapply(jackknife_samples_interval[(n1+1):(n1+n2)], function(x) x[(q1+1):(q1+q2)])?
-    jackknife2 <- lapply(jackknife_samples_interval[(n1+1):(n1+n2)], function(tbl) {
-      upper_bounds <- as.numeric(sub("\\((.+),(.+)\\]", "\\2", names(tbl)))
-      lower_bounds <- as.numeric(sub("\\((.+),(.+)\\]", "\\1", names(tbl)))
-      tbl[upper_bounds <= tau[2]]
-      tbl[lower_bounds >= tau[1]]
-    })
+    jackknife1 <- lapply(jackknife_samples_interval[1:n1], function(x) x[1:q1])
+    jackknife2 <- lapply(jackknife_samples_interval[(n1+1):(n1+n2)], function(x) x[(q1+1):(q1+q2)])
     
     mle1ij <- c()
     for (i in 1 : n1) {
-      n1j <- jackknife1[[i]]
+      n1j.jk <- jackknife1[[i]] #Avner: Previously n1j, avoids having to define n1j again - After testing 20250901
       tau1j <- seq(delta, tau[1], delta)
       tau1j0 <- tau1j - delta
-      mle_1new <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes", n=n,n1j = n1j, n1 = n1-1, tau1 = tau[1],tau1j0 = tau1j0, tau1j = tau1j)$root
+      mle_1new <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes", n=n,n1j = n1j.jk, n1 = n1-1, tau1 = tau[1],tau1j0 = tau1j0, tau1j = tau1j)$root
       mle1ij <- c(mle1ij, mle_1new)
     }
-    
-    n1j <- data[1:q1]
     
     mle1_o <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes",n=n, n1j = n1j, n1 = n1+1, tau1j0 = tau1j0, tau1j = tau1j, tau1 = tau[1])$root
     mle1ij <- c(mle1ij, rep(mle1_o, n2))
@@ -181,8 +170,8 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       T2_new <- jackknife2[[i]]
       d <- c(1*(T2_new < tau[2]), rep(0, n-n1-n2))
       data_new <- c(rep((1:q2)-1, n2j), rep(q2, max(0,n-1-n1-sum(d))))
-      model_list_new <- lapply(1:nrow(parameter_starts), EM_algorithm_interval, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
-                               parameter_starts = parameter_starts, tol = tol)
+      model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_interval, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
+                               parameter_starts = parameter_starts, tol = tol))
 
       
       Estimate_df_new <- data.frame(matrix(nrow = length(model_list_new), ncol = 7))
@@ -241,24 +230,28 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
 
   ##################Calculate the lower and upper bound
   #### Compare to 0 and 1 (for p)!
-  theta1_low <- theta1_bootstrap_ordered[as.integer(alpha11 * B)]
-  theta1_up <- theta1_bootstrap_ordered[as.integer(alpha21 * B)]
-
-  p_low <- p_bootstrap_ordered[as.integer(alpha1p * B)]
+  theta1_low <- theta1_bootstrap_ordered[ifelse(length(as.integer(alpha11 * B) == 0), 1, as.integer(alpha11 * B))]
+  theta1_up <- theta1_bootstrap_ordered[ifelse(is.nan(alpha21 * B), B, as.integer(alpha21 * B))]
+  
+  p_low <- p_bootstrap_ordered[ifelse(length(as.integer(alpha1p * B) == 0), 1, as.integer(alpha1p * B))]
   p_low <- ifelse(p_low < 0, 0L, p_low)
-  p_up <- p_bootstrap_ordered[as.integer(alpha2p * B)]
+  p_up <- p_bootstrap_ordered[ifelse(is.nan(alpha2p * B), B, as.integer(alpha2p * B))]
   p_up <- ifelse(p_up > 1, 1L, p_up)
+  
+  theta21_low <- theta21_bootstrap_ordered[ifelse(length(as.integer(alpha121 * B) == 0), 1, as.integer(alpha121 * B))]
+  theta21_up <- theta21_bootstrap_ordered[ifelse(is.nan(alpha221 * B), B, as.integer(alpha221 * B))]
+  
+  theta22_low <- theta22_bootstrap_ordered[ifelse(length(as.integer(alpha122 * B) == 0), 1, as.integer(alpha122 * B))]
+  theta22_up <- theta22_bootstrap_ordered[ifelse(is.nan(alpha222 * B), B, as.integer(alpha222 * B))]
 
-  theta21_low <- theta21_bootstrap_ordered[as.integer(alpha121 * B)]
-  theta21_up <- theta21_bootstrap_ordered[as.integer(alpha221 * B)]
-
-  theta22_low <- theta22_bootstrap_ordered[as.integer(alpha122 * B)]
-  theta22_up <- theta22_bootstrap_ordered[as.integer(alpha222 * B)]
-
-
-  return(list(CI_theta_1 = c(theta1_low, theta1_up),
-              CI_theta_21 = c(theta21_low, theta21_up),
-              CI_theta_22 = c(theta22_low, theta22_up),
-              CI_theta_p = c(p_low, p_up)))
+  #Confidence Intervals
+  theta1_CI <- c(theta1_low,theta1_up)
+  theta21_CI <- c(theta21_low,theta21_up)
+  theta22_CI <- c(theta22_low,theta22_up)
+  p_CI <- c(p_low,p_up)
+  
+  output <- list(theta1=theta1_CI, theta21=theta21_CI, theta22=theta22_CI,p=p_CI, B=B, j=num_of_iterations, alpha=alpha, type="BCa")
+  class(output) <- "CIhSSALT"
+  return(output)
 
 }

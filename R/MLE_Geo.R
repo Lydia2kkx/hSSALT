@@ -38,19 +38,20 @@ MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, languag
 
   j <- 1:q2
 
-  # Alternative  #Yao: Please check why the comment is alternative? 
-  if (n > sum(data)) { #data is censored with a tau2 that is smaller than the input tau2 #Yao:?
-    n2j <- data[-c(1:q1)] # censored 
-    if(q2 > length(n2j)){n2j <- c(n2j, rep(0, q2-length(n2j)))} #Yao: why need this line?
-  }else{
-    n2j <- data[-c(1:q1)] #Yao: I changed this, the previous version 
-    #data[-c((1:q1),((q1+q2+1):length(data)))] is wrong, since in this case, all failures are observed,
-    #q1+q2 = length(data), q1+q2+1 > length(data), this causes the last element is missing in n2j
-  }
-
+  # # Alternative  #Yao: Please check why the comment is alternative? 
+  # if (n > sum(data)) { #data is censored with a tau2 that is smaller than the input tau2 #Yao:?
+  #   n2j <- data[-c(1:q1)] # censored 
+  #   if(q2 > length(n2j)){n2j <- c(n2j, rep(0, q2-length(n2j)))} #Yao: why need this line?
+  # }else{
+  #   n2j <- data[-c(1:q1)] #Yao: I changed this, the previous version 
+  #   #data[-c((1:q1),((q1+q2+1):length(data)))] is wrong, since in this case, all failures are observed,
+  #   #q1+q2 = length(data), q1+q2+1 > length(data), this causes the last element is missing in n2j
+  # }
+  
+  n2j <- data[(q1+1):(q1+q2)] #Avner: Now works even if the inputted data is the full data (where the previous version failed)
+  if(q1+q2 > length(data)){n2j[(length(data)-q1+1):q2] <- 0} #Avner: If the inputted data does not cover all of n2 then fill with zeros
   n2 <- sum(n2j)
   
-  #Avner: The next line is where the error lies
   data_starts <- rep(j-1, n2j)
   data_starts <- c(data_starts, rep(q2, n-n1-n2))
   d <- as.numeric(data_starts < q2)

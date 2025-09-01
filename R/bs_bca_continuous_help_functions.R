@@ -40,9 +40,9 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
       next
     }
     
-    MLE_results <-MLEhSSALT(sample$Censored_dat, n, 1, tau = tau, theta21 = theta21_grid, 
+    MLE_results <- suppressWarnings(MLEhSSALT(sample$Censored_dat, n, 1, tau = tau, theta21 = theta21_grid, 
                             theta22 = theta22_grid, p = p_grid, language = language,
-                            monitoring = monitoring, delta = delta, parallel = parallel, ncores = ncores)
+                            monitoring = monitoring, delta = delta, parallel = parallel, ncores = ncores))
     Estimate_df <- MLE_results$mle
     Estimate_df$loglik <- MLE_results$loglik
     Estimate_df$n2 <- n2
@@ -97,6 +97,6 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
   #### Boostrap Percentile CIs easily take the corresponding quantiles for each parameter
   # bootstrap_distri <- cbind.data.frame(i = 1:nrow(max_loglik_df), max_loglik_df)
   
-  return(cbind.data.frame(i = 1:nrow(max_loglik_df), max_loglik_df))
+  return(list(cbind.data.frame(i = 1:nrow(max_loglik_df), max_loglik_df), iterations=iter))
   
 }
