@@ -155,11 +155,11 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       n1j.jk <- jackknife1[[i]] #Avner: Previously n1j, avoids having to define n1j again - After testing 20250901
       tau1j <- seq(delta, tau[1], delta)
       tau1j0 <- tau1j - delta
-      mle_1new <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes", n=n,n1j = n1j.jk, n1 = n1-1, tau1 = tau[1],tau1j0 = tau1j0, tau1j = tau1j)$root
+      mle_1new <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes", n = n, n1j = n1j.jk, n1 = n1-1, tau1 = tau[1],tau1j0 = tau1j0, tau1j = tau1j)$root
       mle1ij <- c(mle1ij, mle_1new)
     }
     
-    mle1_o <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes",n=n, n1j = n1j, n1 = n1+1, tau1j0 = tau1j0, tau1j = tau1j, tau1 = tau[1])$root
+    mle1_o <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes", n = n, n1j = n1j, n1 = n1+1, tau1 = tau[1], tau1j0 = tau1j0, tau1j = tau1j)$root
     mle1ij <- c(mle1ij, rep(mle1_o, n2))
     mle1i <- mean(mle1ij)
     a1 <- sum((mle1i - mle1ij)^3) / (6 * (sum((mle1i - mle1ij)^2))^1.5)
@@ -175,7 +175,6 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
 
       
       Estimate_df_new <- data.frame(matrix(nrow = length(model_list_new), ncol = 7))
-      
       
       posterior_l_new <- vector(mode = "list", length=length(model_list_new))
       for (j in 1:length(model_list_new)){

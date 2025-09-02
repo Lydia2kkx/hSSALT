@@ -97,6 +97,6 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
   #### Boostrap Percentile CIs easily take the corresponding quantiles for each parameter
   # bootstrap_distri <- cbind.data.frame(i = 1:nrow(max_loglik_df), max_loglik_df)
   
-  return(list(cbind.data.frame(i = 1:nrow(max_loglik_df), max_loglik_df), iterations=iter))
+  return(list(cbind.data.frame(i = 1:nrow(max_loglik_df), max_loglik_df), iterations = iter - 1))
   
 }

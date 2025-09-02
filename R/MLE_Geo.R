@@ -90,7 +90,6 @@ MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, languag
       }
 
       mle_em <- find_max(Estimate_df)
-      mle_em
 
       return(list(mle1=mle1, n1=n1, mle2=mle_em, n2=n2, censored_rate=1-(n1+n2)/n, estimates=Estimate_df, posterior=posterior_l))
     }
@@ -108,6 +107,12 @@ MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, languag
         mle1 = NA
         EM_mle$results$theta22 = NA
         warning("Mean lifetime in first stress level must be greater than mean lifetimes in the second stress level.") 
+      }
+      
+      #Yao: added check theta21 = 0.
+      #Yao: I think all these checks can be removed in the end to check only once. This change will be done later.
+      if (EM_mle$results$theta21 == 0) {
+        warning("The group with the smaller mean lifetime at the second stress level is estimated to be 0") 
       }
       
       #Check homogeneity
