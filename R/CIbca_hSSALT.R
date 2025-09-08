@@ -75,7 +75,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
                                       parameter_starts = parameter_starts, tol = tol))
           parallel::stopCluster(cl)
         }else{
-          model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d, N=maxit,
+          model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d[1:(length(d)-n+n1+n2)], N=maxit, #Avner: For d=d had to change to match with the size of the data variable. Should probably be done for parallel=TRUE as well
                                    parameter_starts = parameter_starts, tol = tol))
         }
       }else{
@@ -170,8 +170,39 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       T2_new <- jackknife2[[i]]
       d <- c(1*(T2_new < tau[2]), rep(0, n-n1-n2))
       data_new <- c(rep((1:q2)-1, n2j), rep(q2, max(0,n-1-n1-sum(d))))
-      model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_interval, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
-                               parameter_starts = parameter_starts, tol = tol))
+      
+      #Avner: Make length of d match length of data - pretty clunky
+      if (length(d)<length(data_new)) {
+        d[(length(d)+1):length(data_new)] <- 0
+      } else {
+        d <- d[1:length(data_new)]
+      }
+      
+      #Avner: Added the if language CPP based on the continuous part.
+      if(language == "CPP"){
+        if(parallel == TRUE){
+          cl <- parallel::makeCluster(getOption("cl.cores", ncores))
+          model_list_new <- suppressWarnings(parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_interval_arma, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
+                                                                 parameter_starts = parameter_starts, tol = tol))
+          parallel::stopCluster(cl)
+        }else{
+          model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_interval_arma, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
+                                                    parameter_starts = parameter_starts, tol = tol))
+        }
+      }else{
+        if(parallel == TRUE){
+          cl <- parallel::makeCluster(getOption("cl.cores", ncores))
+          model_list_new <- suppressWarnings(parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
+                                                                 parameter_starts = parameter_starts, tol = tol))
+          parallel::stopCluster(cl)
+        }else{
+          model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_interval, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
+                                                                             parameter_starts = parameter_starts, tol = tol))
+        }
+
+      }
+      #model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_interval, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
+      #                         parameter_starts = parameter_starts, tol = tol))
 
       
       Estimate_df_new <- data.frame(matrix(nrow = length(model_list_new), ncol = 7))
