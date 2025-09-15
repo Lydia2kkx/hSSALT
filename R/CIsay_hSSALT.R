@@ -79,7 +79,8 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
       
       # Theta1, Type I
       
-      if(n>50){
+      #Avner: Changed from 50 to 30 to check stability
+      if(n>30){
         
         ###The case with a relatively large sample size (e.g., n = 50)
         ###High precision computation is needed

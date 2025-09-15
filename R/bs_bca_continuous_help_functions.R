@@ -47,7 +47,7 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
     Estimate_df$loglik <- MLE_results$loglik
     Estimate_df$n2 <- n2
     
-    if (MLE_results$message=="not convergent") {
+    if (MLE_results$message != "convergent") {
       iter <- iter + 1
       next
     }
@@ -85,6 +85,7 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
     }
     iter <- iter + 1
     j <- j + 1 ### increase the iteration counter
+    
   }
   
   ####Omit NAs in the result list

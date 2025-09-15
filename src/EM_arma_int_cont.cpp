@@ -55,7 +55,7 @@ arma::vec pexp_boost(arma::vec x, double p) {
 double mysum_cpp(arma::vec v ) {
   
   
-  double s =0;
+  double s = 0;
   
   int n = v.size();
   
@@ -230,6 +230,7 @@ List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::
     
     p1 = mysum_cpp(tau1%d)/mysum_cpp(tau1%(d%(data+1) + (1-d) * q2));
     p2 = mysum_cpp(tau2%d)/mysum_cpp(tau2%(d%(data+1) + (1-d) * q2));
+    
     if (std::abs(p1 - 1) < 1e-128 || std::abs(p2 - 1) < 1e-128) {
       // std::cout << "Warning: p1 reached 1. Exiting EM algorithm early." << std::endl;
       double p_helper = omega1;

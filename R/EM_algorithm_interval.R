@@ -35,6 +35,21 @@ EM_algorithm_interval <- function(ind, data , N, delta , d, parameter_starts, q2
     p1 <- sum_finite(hijk1*d)/sum_finite(hijk1*(d*(data+1) + (1-d)*q2))
     p2 <- sum_finite(hijk2*d)/sum_finite(hijk2*(d*(data+1) + (1-d)*q2))
     
+    #Avner: Matching with C++ function
+    if (abs(p1 - 1) < 1e-128 || abs(p2 - 1) < 1e-128) {
+      p_helper = omega1
+      if (p1 <= p2) {
+        theta22 <- -delta/log(1 - p1)
+        omega1 = omega2
+        omega2 = p_helper
+      } else {
+        theta22 <- -delta/log(1 - p2)
+      }
+      return(list(results = data.frame(p1 = omega1, p2 = omega2, theta21 = 0, theta22 = theta22,
+                                       loglik = loglik[k-1], iteration = k-2,
+                                       message = "p1 reached 1"), posterior = NA))
+    }
+    
     loglik[k+1]<-sum_finite(hijk1*(log(omega1)+d*log(dgeom(data, p1)) + (1-d)*log(1-pgeom(data, p1))))+
       sum_finite(hijk2*(log(omega2)+d*log(dgeom(data, p2))+ (1-d)*log(1-pgeom(data, p2))))
     
