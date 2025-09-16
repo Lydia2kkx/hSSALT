@@ -96,7 +96,7 @@ arma::vec pgeom_boost(arma::vec x, double p) {
 
 
 // [[Rcpp::export]]
-List EM_algorithm_censored_arma(arma::vec data, double ind, arma::vec d, DataFrame parameter_starts, int N = 1000, double tol = 1e-8){
+List EM_algorithm_censored_arma(arma::vec data, double ind, arma::vec d, DataFrame parameter_starts, int N, double tol){
   DataFrame results;
   arma::vec firstcol = parameter_starts[0];
   arma::vec secondcol = parameter_starts[1];
@@ -180,7 +180,7 @@ List EM_algorithm_censored_arma(arma::vec data, double ind, arma::vec d, DataFra
 
 
 // [[Rcpp::export]]
-List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::vec d, DataFrame parameter_starts, double q2, int N = 1000, double tol = 1e-8){
+List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::vec d, DataFrame parameter_starts, double q2, int N, double tol){
   arma::vec firstcol = parameter_starts[0];
   arma::vec secondcol = parameter_starts[1];
   arma::vec thirdcol = parameter_starts[2];
