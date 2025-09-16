@@ -19,7 +19,7 @@ Description: This package offers a comprehensive framework for analyzing a simpl
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Depends: 
     R (>= 3.5)
 LinkingTo: 
@@ -29,6 +29,7 @@ LinkingTo:
     BH
 Imports: 
     Rmpfr,
+    gmp,
     numDeriv,
     parallel,
     Rcpp (>= 1.0.10),
