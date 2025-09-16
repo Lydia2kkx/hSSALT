@@ -119,9 +119,10 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         
         theta1_approxCI_low <- mle1 - bias - qnorm(1-alpha/2)*sqrt(V1)
         theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
-        theta1_approxCI_low <- sapply(theta1_approxCI_low[1], asNumeric)
+        #Yao: please check if this asNumeric function can be replaced by any other basic function
+        theta1_approxCI_low <- sapply(theta1_approxCI_low[1], gmp::asNumeric) 
         theta1_approxCI_up <- mle1 - bias + qnorm(1-alpha/2)*sqrt(V1)
-        theta1_approxCI_up <- sapply(theta1_approxCI_up[1], asNumeric)
+        theta1_approxCI_up <- sapply(theta1_approxCI_up[1], gmp::asNumeric)
         
         
       }else{
@@ -220,9 +221,9 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         bias <- bias_Mpfr_modify(mle1, n = Rmpfr::mpfr(n, 256), r = r)  #n = mpfr(n, 512) when n = 200
         theta1_approxCI_low <- mle1 - bias - qnorm(1-alpha/2)*sqrt(V1)
         theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
-        theta1_approxCI_low <- sapply(theta1_approxCI_low[1], asNumeric)
+        theta1_approxCI_low <- sapply(theta1_approxCI_low[1], gmp::asNumeric)
         theta1_approxCI_up <- mle1 - bias + qnorm(1-alpha/2)*sqrt(V1)
-        theta1_approxCI_up <- sapply(theta1_approxCI_up[1], asNumeric)
+        theta1_approxCI_up <- sapply(theta1_approxCI_up[1], gmp::asNumeric)
       }else{
         
         T1 <- data[data<tau[1]]
@@ -291,8 +292,8 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
   p_approxCI_up <- ifelse(p_approxCI_up > 1, 1L, p_approxCI_up)
   
   if (n>50 && monitoring=="continuous") {
-    p_approxCI_low <- sapply(p_approxCI_low[1], asNumeric)
-    p_approxCI_up <- sapply(p_approxCI_up[1], asNumeric)
+    p_approxCI_low <- sapply(p_approxCI_low[1], gmp::asNumeric)
+    p_approxCI_up <- sapply(p_approxCI_up[1], gmp::asNumeric)
   }
   
   theta21_approxCI_low <- theta21 - qnorm(1-alpha/2)*sqrt(Vtheta21)
