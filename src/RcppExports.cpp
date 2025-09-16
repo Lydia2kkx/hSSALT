@@ -12,8 +12,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // EM_algorithm_censored_arma
-DataFrame EM_algorithm_censored_arma(arma::vec data, double ind, arma::vec d, DataFrame parameter_starts, int N);
-RcppExport SEXP _hSSALT_EM_algorithm_censored_arma(SEXP dataSEXP, SEXP indSEXP, SEXP dSEXP, SEXP parameter_startsSEXP, SEXP NSEXP) {
+List EM_algorithm_censored_arma(arma::vec data, double ind, arma::vec d, DataFrame parameter_starts, int N, double tol);
+RcppExport SEXP _hSSALT_EM_algorithm_censored_arma(SEXP dataSEXP, SEXP indSEXP, SEXP dSEXP, SEXP parameter_startsSEXP, SEXP NSEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -22,13 +22,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type d(dSEXP);
     Rcpp::traits::input_parameter< DataFrame >::type parameter_starts(parameter_startsSEXP);
     Rcpp::traits::input_parameter< int >::type N(NSEXP);
-    rcpp_result_gen = Rcpp::wrap(EM_algorithm_censored_arma(data, ind, d, parameter_starts, N));
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(EM_algorithm_censored_arma(data, ind, d, parameter_starts, N, tol));
     return rcpp_result_gen;
 END_RCPP
 }
 // EM_algorithm_interval_arma
-DataFrame EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::vec d, DataFrame parameter_starts, double q2, int N);
-RcppExport SEXP _hSSALT_EM_algorithm_interval_arma(SEXP dataSEXP, SEXP deltaSEXP, SEXP indSEXP, SEXP dSEXP, SEXP parameter_startsSEXP, SEXP q2SEXP, SEXP NSEXP) {
+List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::vec d, DataFrame parameter_starts, double q2, int N, double tol);
+RcppExport SEXP _hSSALT_EM_algorithm_interval_arma(SEXP dataSEXP, SEXP deltaSEXP, SEXP indSEXP, SEXP dSEXP, SEXP parameter_startsSEXP, SEXP q2SEXP, SEXP NSEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -39,14 +40,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< DataFrame >::type parameter_starts(parameter_startsSEXP);
     Rcpp::traits::input_parameter< double >::type q2(q2SEXP);
     Rcpp::traits::input_parameter< int >::type N(NSEXP);
-    rcpp_result_gen = Rcpp::wrap(EM_algorithm_interval_arma(data, delta, ind, d, parameter_starts, q2, N));
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(EM_algorithm_interval_arma(data, delta, ind, d, parameter_starts, q2, N, tol));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_hSSALT_EM_algorithm_censored_arma", (DL_FUNC) &_hSSALT_EM_algorithm_censored_arma, 5},
-    {"_hSSALT_EM_algorithm_interval_arma", (DL_FUNC) &_hSSALT_EM_algorithm_interval_arma, 7},
+    {"_hSSALT_EM_algorithm_censored_arma", (DL_FUNC) &_hSSALT_EM_algorithm_censored_arma, 6},
+    {"_hSSALT_EM_algorithm_interval_arma", (DL_FUNC) &_hSSALT_EM_algorithm_interval_arma, 8},
     {NULL, NULL, 0}
 };
 
