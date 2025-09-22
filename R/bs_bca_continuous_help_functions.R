@@ -29,11 +29,10 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
   
   while (j <= B){
     
-    sample <- rhSSALT(n, 1, tau = tau, theta1 = theta1, theta21 = theta21, theta22 = theta22,
-                      p = p, monitoring = monitoring, delta = delta)
+    sample <- suppressWarnings(rhSSALT(n, 1, tau = tau, theta1 = theta1, theta21 = theta21, theta22 = theta22,
+                      p = p, monitoring = monitoring, delta = delta))
     n1 <- sample$Censored_num_level[1]
     n2 <- sample$Censored_num_level[2]
-    T2 <- sample$Full_dat[sample$Full_dat>tau[1]] #Yao: why need this line? This is also wrong
     
     if((n1 == 0)){
       iter <- iter + 1
@@ -47,7 +46,7 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
     Estimate_df$loglik <- MLE_results$loglik
     Estimate_df$n2 <- n2
     
-    if (MLE_results$message != "convergent") {
+    if (MLE_results$message == "not convergent") {
       iter <- iter + 1
       next
     }

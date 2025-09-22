@@ -13,11 +13,11 @@ theta22_u <- c(df.cont.asymptotic.cpp$theta22_u - df.cont.asymptotic.R$theta22_u
 p_l <- c(df.cont.asymptotic.cpp$p_l - df.cont.asymptotic.R$p_l, df.cont.percentile.cpp$p_l - df.cont.percentile.R$p_l, df.cont.bca.cpp$p_l - df.cont.bca.R$p_l)
 p_u <- c(df.cont.asymptotic.cpp$p_u - df.cont.asymptotic.R$p_u, df.cont.percentile.cpp$p_u - df.cont.percentile.R$p_u, df.cont.bca.cpp$p_u - df.cont.bca.R$p_u)
 
-type <- c(noquote(rep("Asymptotic", 20)), noquote(rep("Percentile", 20)), noquote(rep("BCa", 20)))
-seed <- rep(1:20, 3)
+type <- c(noquote(rep("Asymptotic", 400)), noquote(rep("Percentile", 400)), noquote(rep("BCa", 400)))
+seed <- rep(1:400, 3)
 
 cont.df <- data.frame(seed, theta1_l,theta1_u,theta21_l, theta21_u, theta22_l, theta22_u, p_l, p_u, type)
-write.csv(cont.df, "testing_diffs_cont_adjusted.csv", row.names=FALSE)
+write.csv(cont.df, "testing_diffs_cont_400.csv", row.names=FALSE)
 
 
 
@@ -36,8 +36,8 @@ theta22_u <- c(df.int.asymptotic.cpp$theta22_u - df.int.asymptotic.R$theta22_u, 
 p_l <- c(df.int.asymptotic.cpp$p_l - df.int.asymptotic.R$p_l, df.int.percentile.cpp$p_l - df.int.percentile.R$p_l, df.int.bca.cpp$p_l - df.int.bca.R$p_l)
 p_u <- c(df.int.asymptotic.cpp$p_u - df.int.asymptotic.R$p_u, df.int.percentile.cpp$p_u - df.int.percentile.R$p_u, df.int.bca.cpp$p_u - df.int.bca.R$p_u)
 
-type <- c(noquote(rep("Asymptotic", 20)), noquote(rep("Percentile", 20)), noquote(rep("BCa", 20)))
-seed <- rep(1:20, 3)
+type <- c(noquote(rep("Asymptotic", 400)), noquote(rep("Percentile", 400)), noquote(rep("BCa", 400)))
+seed <- rep(1:400, 3)
 
 intervals.df <- data.frame(seed, theta1_l,theta1_u,theta21_l, theta21_u, theta22_l, theta22_u, p_l, p_u, type)
-write.csv(intervals.df, "testing_diffs_interval_adjusted.csv", row.names=FALSE)
+write.csv(intervals.df, "testing_diffs_interval_400.csv", row.names=FALSE)

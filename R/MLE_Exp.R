@@ -63,7 +63,7 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
   if(language == "CPP") {
     
     if (dim(parameter_starts)[1]==1){
-      EM_mle <- EM_algorithm_censored_arma(ind =1, data=t22-tau[1], d=d, N=maxit, parameter_starts = parameter_starts, tol = tol)
+      EM_mle <- hSSALT:::EM_algorithm_censored_arma(ind =1, data=t22-tau[1], d=d, N=maxit, parameter_starts = parameter_starts, tol = tol)
     }else{
       
       if(parallel == TRUE){
@@ -83,11 +83,12 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
     
     if (dim(parameter_starts)[1] == 1){
       EM_mle <- EM_algorithm_censored(ind = 1, data = t22-tau[1], d = d, N = maxit, 
-                                      parameter_starts = parameter_starts, tol)
+                                      parameter_starts = parameter_starts, tol = tol)
     }else{
       
       if(parallel == TRUE){
         cl <- parallel::makeCluster(getOption("cl.cores", ncores))
+        parallel::clusterExport(cl, "sum_finite")
         EM_mle <- parallel::parLapply(cl, 1:nrow(parameter_starts), EM_algorithm_censored, data = t22 - tau[1], d=d, N=maxit,
                             parameter_starts = parameter_starts, tol)
         parallel::stopCluster(cl)

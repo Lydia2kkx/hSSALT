@@ -67,11 +67,14 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
                         #second stress level.
       T2_new <- T2[-i]  
       d <- c(1*(T2_new <= tau[2]), rep(0, n-n1-n2)) #Yao: I also add the censored part here
+      #d <- c(1*(T2_new <= tau[2]))
       t22_new <- apply(cbind(T2_new, tau[2]), 1, min) # observed or censored data
-      if(language == "CPP"){
+      
+      #Avner: For testing I changed it to CPP-Testing to just skip and go straight to the R function. Fixes a lot of problems so I suggest to remove this
+      if(language == "CPP-Testing"){
         if(parallel == TRUE){
           cl <- parallel::makeCluster(getOption("cl.cores", ncores))
-          model_list_new <- suppressWarnings(parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d, N=maxit,
+          model_list_new <- suppressWarnings(parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d[1:(length(d)-n+n1+n2)], N=maxit,
                                       parameter_starts = parameter_starts, tol = tol))
           parallel::stopCluster(cl)
         }else{
@@ -81,6 +84,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       }else{
         if(parallel == TRUE){
           cl <- parallel::makeCluster(getOption("cl.cores", ncores))
+          parallel::clusterExport(cl, "sum_finite")
           model_list_new <- suppressWarnings(parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored, data = t22_new - tau[1], d=d, N=maxit,
                                       parameter_starts = parameter_starts, tol = tol))
           parallel::stopCluster(cl)
@@ -192,7 +196,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       }else{
         if(parallel == TRUE){
           cl <- parallel::makeCluster(getOption("cl.cores", ncores))
-          model_list_new <- suppressWarnings(parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
+          model_list_new <- suppressWarnings(parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_interval, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
                                                                  parameter_starts = parameter_starts, tol = tol))
           parallel::stopCluster(cl)
         }else{
@@ -227,7 +231,6 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
   max_loglik_re_df <- do.call("rbind.data.frame", Re)
   
   colnames(max_loglik_re_df) <- colnames(model_list_new[[1]]$results)
-
 
   pij <- c(rep(p, n1), max_loglik_re_df$p1)
   pi <- mean(pij)
