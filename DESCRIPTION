@@ -29,7 +29,6 @@ LinkingTo:
     BH
 Imports: 
     Rmpfr,
-    gmp,
     numDeriv,
     parallel,
     Rcpp (>= 1.0.10),

@@ -57,6 +57,7 @@ MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, languag
 
       if(parallel == TRUE){
       cl <- parallel::makeCluster(getOption("cl.cores", ncores))
+      parallel::clusterExport(cl, varlist = c("mysum_cpp", "EM_algorithm_interval_arma"))
       EM_mle <- parallel::parLapply(cl, 1:nrow(parameter_starts), EM_algorithm_interval_arma, data = data_starts, N = maxit,
                 delta = delta, d=d, parameter_starts=parameter_starts, q2=q2, tol=tol)
       parallel::stopCluster(cl)
@@ -77,6 +78,7 @@ MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, languag
 
       if(parallel == TRUE){
         cl <- parallel::makeCluster(getOption("cl.cores", ncores))
+        parallel::clusterExport(cl, varlist = c("sum_finite", "EM_algorithm_interval"))
         EM_mle <- parallel::parLapply(cl, 1:nrow(parameter_starts), EM_algorithm_interval, data = data_starts, N = maxit,
                             delta = delta, d=d, parameter_starts=parameter_starts, q2=q2, tol = tol)
         parallel::stopCluster(cl)

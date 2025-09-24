@@ -74,6 +74,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       if(language == "CPP-Testing"){
         if(parallel == TRUE){
           cl <- parallel::makeCluster(getOption("cl.cores", ncores))
+          parallel::clusterExport(cl, varlist = c("mysum_cpp", "EM_algorithm_censored_arma"))
           model_list_new <- suppressWarnings(parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d[1:(length(d)-n+n1+n2)], N=maxit,
                                       parameter_starts = parameter_starts, tol = tol))
           parallel::stopCluster(cl)
@@ -84,7 +85,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       }else{
         if(parallel == TRUE){
           cl <- parallel::makeCluster(getOption("cl.cores", ncores))
-          parallel::clusterExport(cl, "sum_finite")
+          parallel::clusterExport(cl, varlist = c("sum_finite", "EM_algorithm_censored"))
           model_list_new <- suppressWarnings(parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_censored, data = t22_new - tau[1], d=d, N=maxit,
                                       parameter_starts = parameter_starts, tol = tol))
           parallel::stopCluster(cl)
@@ -186,6 +187,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       if(language == "CPP"){
         if(parallel == TRUE){
           cl <- parallel::makeCluster(getOption("cl.cores", ncores))
+          parallel::clusterExport(cl, varlist = c("mysum_cpp", "EM_algorithm_interval_arma"))
           model_list_new <- suppressWarnings(parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_interval_arma, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
                                                                  parameter_starts = parameter_starts, tol = tol))
           parallel::stopCluster(cl)
@@ -196,6 +198,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       }else{
         if(parallel == TRUE){
           cl <- parallel::makeCluster(getOption("cl.cores", ncores))
+          parallel::clusterExport(cl, varlist = c("sum_finite", "EM_algorithm_interval"))
           model_list_new <- suppressWarnings(parallel::parLapply(cl,1:nrow(parameter_starts), EM_algorithm_interval, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
                                                                  parameter_starts = parameter_starts, tol = tol))
           parallel::stopCluster(cl)
