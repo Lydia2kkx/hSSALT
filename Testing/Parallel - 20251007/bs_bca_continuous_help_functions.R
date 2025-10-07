@@ -1,16 +1,22 @@
 
 
 bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22, p, censoring,
-                                  tau, r, B, delta, maxit, tol, language){
+                                  tau, r, B, delta, maxit, tol, language, parallel, ncores, grid){
   
   if(censoring == 2){
     tau <- c(tau[1], data[r])
   }
   
   #Avner: Simple Grid for now
-  p_grid <- p
-  theta21_grid <- theta21
-  theta22_grid <- theta22
+  if (grid) {
+    p_grid <- c(p*0.5,p,p*0.5+0.5)
+    theta21_grid <- c(theta21*0.5,theta21,theta21*1.5)
+    theta22_grid <- c(theta22*0.5,theta22,theta22*1.5)
+  } else {
+    p_grid <- p
+    theta21_grid <- theta21
+    theta22_grid <- theta22
+  }
   
   same_threshold <- 0.05
   p_threshold <- 0.01
@@ -35,7 +41,7 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
     
     MLE_results <- suppressWarnings(MLEhSSALT(sample$Censored_dat, n, 1, tau = tau, theta21 = theta21_grid, 
                             theta22 = theta22_grid, p = p_grid, language = language,
-                            monitoring = monitoring, delta = delta))
+                            monitoring = monitoring, delta = delta, parallel = parallel, ncores = ncores))
     Estimate_df <- MLE_results$mle
     Estimate_df$loglik <- MLE_results$loglik
     Estimate_df$n2 <- n2

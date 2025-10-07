@@ -1,12 +1,12 @@
 
 CIbs_hSSALT <-function(data, n, censoring, tau , r, monitoring, delta, alpha, B, theta1, theta21,
-                       theta22, p, maxit, tol, language){
+                       theta22, p, maxit, tol, language, parallel, ncores,grid){
 
   #Yao: please check: Does the order of the arguments cause issues?  
   bootstrap_distri_list <- bootstrap_distribution(data, n, monitoring = monitoring, theta1 = theta1,
                                              theta21 = theta21, theta22 = theta22, p = p, 
                                              censoring, tau, r, B, delta = delta, maxit, tol, 
-                                             language)
+                                             language, parallel, ncores, grid)
   
   
   bootstrap_distri <- bootstrap_distri_list[[1]]

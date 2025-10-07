@@ -1,4 +1,4 @@
-MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, language){
+MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, language, parallel, ncores){
 
   # All Type I censoring
 
@@ -54,8 +54,19 @@ MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, languag
       EM_mle <- EM_algorithm_interval_arma(ind =1, data = data_starts, N = maxit,
                                             delta = delta, d=d, parameter_starts=parameter_starts, q2=q2, tol = tol)
     }else{
+
+      if(parallel == TRUE){
+      cl <- parallel::makeCluster(getOption("cl.cores", ncores))
+      parallel::clusterExport(cl, varlist = c("mysum_cpp", "EM_algorithm_interval_arma"))
+      EM_mle <- parallel::parLapply(cl, 1:nrow(parameter_starts), EM_algorithm_interval_arma, data = data_starts, N = maxit,
+                delta = delta, d=d, parameter_starts=parameter_starts, q2=q2, tol=tol)
+      parallel::stopCluster(cl)
+
+      }else {
+
       EM_mle <- lapply(1:nrow(parameter_starts), EM_algorithm_interval_arma, data = data_starts, N = maxit,
                           delta = delta, d=d, parameter_starts=parameter_starts, q2=q2, tol = tol)
+      }
     }
 
   }else{
@@ -64,8 +75,19 @@ MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, languag
       EM_mle <- EM_algorithm_interval(ind =1, data = data_starts, N = maxit,
                                            delta = delta, d=d, parameter_starts=parameter_starts, q2=q2, tol = tol)
     }else{
-      EM_mle <- lapply(1:nrow(parameter_starts), EM_algorithm_interval, data = data_starts, N = maxit,
+
+      if(parallel == TRUE){
+        cl <- parallel::makeCluster(getOption("cl.cores", ncores))
+        parallel::clusterExport(cl, varlist = c("sum_finite", "EM_algorithm_interval"))
+        EM_mle <- parallel::parLapply(cl, 1:nrow(parameter_starts), EM_algorithm_interval, data = data_starts, N = maxit,
+                            delta = delta, d=d, parameter_starts=parameter_starts, q2=q2, tol = tol)
+        parallel::stopCluster(cl)
+
+      }else {
+
+        EM_mle <- lapply(1:nrow(parameter_starts), EM_algorithm_interval, data = data_starts, N = maxit,
                          delta = delta, d=d, parameter_starts=parameter_starts, q2=q2, tol = tol)
+      }
     }
   }
   

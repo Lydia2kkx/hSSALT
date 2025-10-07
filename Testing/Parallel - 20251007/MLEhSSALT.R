@@ -4,7 +4,7 @@
 #'
 #' @usage MLEhSSALT(data, n, censoring = 1, tau, r = NULL, monitoring = "continuous", 
 #'           delta = NULL, theta21, theta22, p, maxit = 1000, 
-#'           tol = 1e-8, language = "CPP")
+#'           tol = 1e-8, language = "CPP", parallel = FALSE, ncores = 2)
 #'
 #' @param data sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.
 #' @param n sample size, a positive integer.
@@ -19,6 +19,8 @@
 #' @param maxit The maximum number of iterations allowed, an integer. Default value is \code{1000}.
 #' @param tol Tolerance limit for declaring algorithm convergence based on the change between two consecutive iterations. Default value is \code{1e-8}.
 #' @param language \code{"R"} or \code{"CPP"}. Only for bootstrap methods. Default value is \code{"CPP"}.
+#' @param parallel support parallel computation for multiple initial values, a logical value. Default value is \code{FALSE}.
+#' @param ncores the number of cores that are used in parallelization, a positive integer.
 #'
 #' @seealso \code{\link{CIhSSALT}}
 #'
@@ -31,7 +33,7 @@
 
 MLEhSSALT <- function(data, n, censoring = 1, tau, r = NULL, monitoring = "continuous",
                       delta = NULL, theta21, theta22, p, maxit = 1000, tol = 1e-8, 
-                      language = "CPP") {
+                      language = "CPP", parallel = FALSE, ncores = 2) {
   
   ### Part 1: Check Validity of Given Input
   ###Check the input of parameter n
@@ -157,6 +159,21 @@ MLEhSSALT <- function(data, n, censoring = 1, tau, r = NULL, monitoring = "conti
     stop("Invalid argument 'maxit'! The value of 'maxit' should be a positive number")
   }
   
+  if (ncores < 0 || !is.numeric(ncores)) {
+    stop("Invalid argument 'ncores'! The value of 'ncores' should be a positive integer")
+  }
+  if (ncores > parallel::detectCores()){
+    ncores = parallel::detectCores()
+    warning(paste0("System has less cores. 'ncores' is set to ", ncores))
+  }
+  
+  if (!is.logical(parallel)){
+    stop("Invalid argument 'parallel'! The value of 'parallel' should be a boolean")
+  }
+  
+  if (!is.logical(parallel)){
+    stop("Invalid argument 'parallel'! The value of 'parallel' should be a boolean")
+  }
   
   if (!language %in% c("CPP", "R")){
     language <- "CPP"
@@ -168,9 +185,9 @@ MLEhSSALT <- function(data, n, censoring = 1, tau, r = NULL, monitoring = "conti
   
   if( monitoring == "continuous" ) {
     return(MLE_Exp(data = data, n = n, censoring, tau = tau, r, theta21 = theta21, 
-                   theta22 = theta22, p = p, maxit, tol, language))
+                   theta22 = theta22, p = p, maxit, tol, language, parallel, ncores))
   } else {
     return(MLE_Geo(data = data, n = n, tau = tau, delta = delta, theta21 = theta21, 
-                   theta22 = theta22, p = p, maxit, tol, language))
+                   theta22 = theta22, p = p, maxit, tol, language, parallel, ncores))
   }
 }

@@ -4,7 +4,8 @@
 #'
 #' @usage CIhSSALT(data, n, MLEhSSALT_Obj, censoring = 1, tau, r = NULL, 
 #'          monitoring = "continuous", delta = NULL, CImethod = "asymptotic", 
-#'          alpha = 0.05, B = 1000, maxit = 1000, tol = 1e-8, language = "CPP")
+#'          alpha = 0.05, B = 1000, maxit = 1000, tol = 1e-8, language = "CPP", 
+#'          parallel = FALSE, ncores = 2)
 #'
 #' @param data sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.
 #' @param n sample size, a positive integer.
@@ -20,6 +21,8 @@
 #' @param maxit The maximum number of iterations allowed, a positive integer. Only for bootstrap methods. Default value is \code{1000}.
 #' @param tol Tolerance limit for declaring algorithm convergence based on the change between two consecutive iterations. Only for bootstrap methods. Default value is \code{1e-8}.
 #' @param language \code{"R"} or \code{"CPP"}. Only for bootstrap methods. Default value is \code{"CPP"}.
+#' @param parallel support parallel computation, a logical value. Only for bootstrap methods. Default value is \code{FALSE}.
+#' @param ncores the number of cores that are used in parallelization, a positive integer.
 #'
 #' @return A \code{CIhSSALT} object that includes the type of returned CIs and the CIs for four parameters at a given significance level.
 #'
@@ -34,7 +37,7 @@
 
 CIhSSALT <- function(data, n, MLEhSSALT_Obj, censoring = 1, tau, r=NULL, monitoring = "continuous",
                      delta = NULL, CImethod = "asymptotic", alpha = 0.05, B = 1000, maxit = 1000, 
-                     tol=1e-8, language = "CPP"){
+                     tol=1e-8, language = "CPP", parallel = FALSE, ncores = 2, grid = FALSE){
   
   theta1 <- MLEhSSALT_Obj$mle$theta1
   theta21 <- MLEhSSALT_Obj$mle$theta21
@@ -128,6 +131,22 @@ CIhSSALT <- function(data, n, MLEhSSALT_Obj, censoring = 1, tau, r=NULL, monitor
     stop("Invalid argument 'maxit'! The value of 'maxit' should be a positive number")
   }
   
+  if (ncores < 0 || !is.numeric(ncores)) {
+    stop("Invalid argument 'ncores'! The value of 'ncores' should be a positive integer")
+  }
+  if (ncores > parallel::detectCores()){
+    ncores = parallel::detectCores()
+    warning(paste0("System has less cores. 'ncores' is set to ", ncores))
+  }
+  
+  if (!is.logical(parallel)){
+    stop("Invalid argument 'parallel'! The value of 'parallel' should be a boolean")
+  }
+  
+  if (!is.logical(parallel)){
+    stop("Invalid argument 'parallel'! The value of 'parallel' should be a boolean")
+  }
+  
   if (!language %in% c("CPP", "R")){
     language <- "CPP"
     warning("Invalid argument 'language'! language is 'CPP' or 'R'.
@@ -168,10 +187,10 @@ CIhSSALT <- function(data, n, MLEhSSALT_Obj, censoring = 1, tau, r=NULL, monitor
   }else{
     if(CImethod == "percentile"){
       CIbs_hSSALT(data, n, censoring, tau, r, monitoring, delta, alpha, B, theta1,
-                  theta21, theta22, p, maxit, tol, language)
+                  theta21, theta22, p, maxit, tol, language, parallel, ncores, grid)
     }else{
       CIbca_hSSALT(data, n, censoring, tau, r, monitoring, delta, alpha, B,
-                   theta1, theta21, theta22, p, maxit, tol, language)
+                   theta1, theta21, theta22, p, maxit, tol, language, parallel, ncores, grid)
     }
   }
 }

@@ -29,16 +29,15 @@ r <- 30
 delta <- 0.5
 seed <- 1:20
 
-set.seed(16)
-sample <- rhSSALT(n,1,tau=tau,theta1=theta1,theta21 = theta21,theta22 = theta22,p=p, monitoring="continuous", delta=delta)
+# set.seed(315)
+# sample <- rhSSALT(n,1,tau=tau,theta1=theta1,theta21 = theta21,theta22 = theta22,p=p, monitoring="interval", delta=delta)
+# resMLE_r <- MLEhSSALT(sample$Censored_dat,n,1,tau=tau,theta21 = theta21,theta22 = theta22,p=p,language = "R", monitoring="interval",delta=delta)
+# CI_r <- CIhSSALT(sample$Censored_dat,n,1,tau=tau,MLEhSSALT_Obj=resMLE_r,language = "R",monitoring = "interval", B=B,grid=F, CImethod="percentile",delta=delta)
 
-resMLE_r <- MLEhSSALT(sample$Censored_dat,n,1,tau=tau,theta21 = theta21,theta22 = theta22,p=p,language = "R", monitoring="continuous",delta=delta)
-CI_r <- CIhSSALT(sample$Censored_dat,n,1,tau=tau,MLEhSSALT_Obj=resMLE_r,language = "R",monitoring = "continuous", B=B,grid=F, CImethod="asymptotic",delta=delta)
-
-set.seed(16)
-sample <- rhSSALT(n,1,tau=tau,theta1=theta1,theta21 = theta21,theta22 = theta22,p=p, monitoring="continuous",delta=delta)
-resMLE_cpp <- MLEhSSALT(sample$Censored_dat,n,1,tau=tau,theta21 = theta21,theta22 = theta22,p=p,language = "CPP", monitoring="continuous",delta=delta)
-CI_cpp <- CIhSSALT(sample$Censored_dat,n,1,tau=tau,MLEhSSALT_Obj=resMLE_cpp,language = "CPP",monitoring = "continuous", B=B,grid=F, CImethod="asymptotic",delta=delta)
+set.seed(2)
+sample <- rhSSALT(n,1,tau=tau,theta1=theta1,theta21 = theta21,theta22 = theta22,p=p, monitoring="interval", delta=delta)
+resMLE_cpp <- MLEhSSALT(sample$Censored_dat,n,1,tau=tau,theta21 = theta21,theta22 = theta22,p=p,language = "CPP", monitoring="interval", delta=delta)
+CI_cpp <- CIhSSALT(sample$Censored_dat,n,1,tau=tau,MLEhSSALT_Obj=resMLE_cpp,language = "CPP",monitoring="interval", delta=delta, B=B, CImethod="percentile")
 
 # resMLE_r$mle$theta1
 # resMLE_cpp$mle$theta1
@@ -53,5 +52,8 @@ CI_cpp <- CIhSSALT(sample$Censored_dat,n,1,tau=tau,MLEhSSALT_Obj=resMLE_cpp,lang
 
 # mydfR$theta22 - mydfCPP$theta22[1:807]
 
-CI_r
+#CI_r
 CI_cpp
+
+#tst <- abs(theta1_test_r$theta1_test - theta1_test_cpp$theta1_test)
+#which(tst > 0.1)
