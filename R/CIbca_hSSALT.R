@@ -2,9 +2,10 @@
 CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
                         theta1, theta21, theta22, p, maxit, tol, language){
   
-  if(censoring==2){
-    tau <- c(tau[1], data[r])
-  }
+  #Avner: I don't it's necessary because we use the MLEhSSALT function  
+  # if(censoring==2){
+  #   tau <- c(tau[1], data[r])
+  # }
 
   bootstrap_distri_list <- bootstrap_distribution(data, n, monitoring = monitoring, theta1 = theta1, theta21 = theta21,
                                              theta22 = theta22, p = p, censoring, tau, r, B, delta = delta, maxit, tol, 
@@ -41,7 +42,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
     
     T1 <- data[data<tau[1]]
     n1 <- length(T1)
-    T2 <- data[data>=tau[1]] 
+    T2 <- data[data>=tau[1]] #Avner: Only correct if data is censored, no?
     n2 <- length(T2)
     
     mle1ij <- c()
@@ -69,6 +70,21 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       d <- c(1*(T2_new <= tau[2]), rep(0, n-n1-n2)) #Yao: I also add the censored part here
       #d <- c(1*(T2_new <= tau[2]))
       t22_new <- apply(cbind(T2_new, tau[2]), 1, min) # observed or censored data
+      
+      #Avner: Type-2 adapted from MLE_Exp.R
+      n_c <- length(data)
+      if (censoring == 2){
+        #n2 <- r-n1
+        cs <- T2_new[r-n1]
+        
+        if (n>n_c){
+          t22_new <- c(T2_new, rep(cs, n-n_c))
+          d <- c(rep(1, n_c-n1), rep(0, n-n_c))
+        }else{
+          d <- 1*(T2_new <= cs)              # censoring indicator
+          t22_new <- apply(cbind(T2_new, cs), 1, min) # observed or censored data
+        }
+      }
       
       #Avner: For testing I changed it to CPP-Testing to just skip and go straight to the R function. Fixes a lot of problems so I suggest to remove this
       if(language == "CPP-Testing"){

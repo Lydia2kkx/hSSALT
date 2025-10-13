@@ -3,9 +3,10 @@
 bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22, p, censoring,
                                   tau, r, B, delta, maxit, tol, language){
   
-  if(censoring == 2){
-    tau <- c(tau[1], data[r])
-  }
+  #Avner: I don't think this is necessary since we use the MLEhSSALT function
+  # if(censoring == 2){
+  #   tau <- c(tau[1], data[r])
+  # }
   
   #Avner: Simple Grid for now
   p_grid <- p
@@ -23,7 +24,8 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
   
   while (j <= B){
     
-    sample <- suppressWarnings(rhSSALT(n, 1, tau = tau, theta1 = theta1, theta21 = theta21, theta22 = theta22,
+    #Avner: Added censoring and r
+    sample <- suppressWarnings(rhSSALT(n, censoring = censoring, r = r, tau = tau, theta1 = theta1, theta21 = theta21, theta22 = theta22,
                                        p = p, monitoring = monitoring, delta = delta))
     n1 <- sample$Censored_num_level[1]
     n2 <- sample$Censored_num_level[2]
@@ -33,7 +35,8 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
       next
     }
     
-    MLE_results <- suppressWarnings(MLEhSSALT(sample$Censored_dat, n, 1, tau = tau, theta21 = theta21_grid, 
+    #Avner: Added censoring and r
+    MLE_results <- suppressWarnings(MLEhSSALT(sample$Censored_dat, n, censoring = censoring, r = r, tau = tau, theta21 = theta21_grid, 
                             theta22 = theta22_grid, p = p_grid, language = language,
                             monitoring = monitoring, delta = delta))
     Estimate_df <- MLE_results$mle

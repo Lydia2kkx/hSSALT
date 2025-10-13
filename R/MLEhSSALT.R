@@ -59,6 +59,7 @@ MLEhSSALT <- function(data, n, censoring = 1, tau, r = NULL, monitoring = "conti
     stop(paste("In type", censoring, "censoring, the number of stress levels (2) and the length of tau don't match"))
   }
   ###Check the input of parameter r
+  #Avner: This might be problematic with Type-2 intervals
   if (((censoring == 1) + !is.null(r)) == 2) {
     stop("Error: please check which censoring you want to use. If censoring is 1, r is not needed.
          If r is defined, censoring should be 2")
