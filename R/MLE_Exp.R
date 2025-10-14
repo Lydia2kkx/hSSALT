@@ -3,7 +3,7 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
   ############################################################################
   ############# Part 1 first stress level
   ############################################################################
-  
+  data <- sort(data)
   T1 <- data[data < tau[1]]
   n1 <- length(T1)
   T2 <- data[data >= tau[1]]
@@ -12,7 +12,6 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
     warning("No observation under the first stress level!")
     mle1 <- NA
   }else{
-    ### Find the unique solution (it is proved to be unique) with uniroot function
     mle1 <- (sum(T1) + tau[1]*(n-n1))/n1
   }
   

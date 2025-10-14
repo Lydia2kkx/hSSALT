@@ -1,11 +1,9 @@
 
 CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
                         theta1, theta21, theta22, p, maxit, tol, language){
-  
-  #Avner: I don't it's necessary because we use the MLEhSSALT function  
-  # if(censoring==2){
-  #   tau <- c(tau[1], data[r])
-  # }
+  data <- sort(data)
+  #Avner: I don't it's necessary because we use the MLEhSSALT function 
+  #Yao: Yes, I removed and put it in BCa. For Type-II, it causes error.
 
   bootstrap_distri_list <- bootstrap_distribution(data, n, monitoring = monitoring, theta1 = theta1, theta21 = theta21,
                                              theta22 = theta22, p = p, censoring, tau, r, B, delta = delta, maxit, tol, 
@@ -39,11 +37,20 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
   parameter_starts <- data.frame(omega1=p, theta21=theta21, theta22=theta22)
   
   if (monitoring == "continuous") {
-    
+    #Yao: This makes the following assignment simpler. 
+    if(censoring==2){
+      tau <- c(tau[1], data[r])
+    }
     T1 <- data[data<tau[1]]
     n1 <- length(T1)
-    T2 <- data[data>=tau[1]] #Avner: Only correct if data is censored, no?
-    n2 <- length(T2)
+    T2 <- data[data>=tau[1]] #Avner: Only correct if data is censored, no? #Yao: Correct.  
+    #Yao: add the next few lines
+    if(length(data) == n){
+      t22 <- T2[T2<=tau[2]]
+    }else{
+      t22 <- T2
+    }
+    n2 <- length(t22)
     
     mle1ij <- c()
     for (i in 1 : n1) {
@@ -66,27 +73,29 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
                         #is length(T2_combine), which includes also the censored items. Thus, we
                         #need length(T2) - (n-n1-n2) for the number of observed failure under the 
                         #second stress level.
-      T2_new <- T2[-i]  
+      T2_new <- t22[-i]  
       d <- c(1*(T2_new <= tau[2]), rep(0, n-n1-n2)) #Yao: I also add the censored part here
       #d <- c(1*(T2_new <= tau[2]))
       t22_new <- apply(cbind(T2_new, tau[2]), 1, min) # observed or censored data
       
-      #Avner: Type-2 adapted from MLE_Exp.R
-      n_c <- length(data)
-      if (censoring == 2){
-        #n2 <- r-n1
-        cs <- T2_new[r-n1]
-        
-        if (n>n_c){
-          t22_new <- c(T2_new, rep(cs, n-n_c))
-          d <- c(rep(1, n_c-n1), rep(0, n-n_c))
-        }else{
-          d <- 1*(T2_new <= cs)              # censoring indicator
-          t22_new <- apply(cbind(T2_new, cs), 1, min) # observed or censored data
-        }
-      }
-      
+      # #Avner: Type-2 adapted from MLE_Exp.R
+      # #Yao: No need for this part. 
+      # n_c <- length(data)
+      # if (censoring == 2){
+      #   #n2 <- r-n1
+      #   cs <- T2_new[r-n1]
+      #   
+      #   if (n>n_c){
+      #     t22_new <- c(T2_new, rep(cs, n-n_c))
+      #     d <- c(rep(1, n_c-n1), rep(0, n-n_c))
+      #   }else{
+      #     d <- 1*(T2_new <= cs)              # censoring indicator
+      #     t22_new <- apply(cbind(T2_new, cs), 1, min) # observed or censored data
+      #   }
+      # }
+
       #Avner: For testing I changed it to CPP-Testing to just skip and go straight to the R function. Fixes a lot of problems so I suggest to remove this
+      #Yao: Change back to "CPP"?
       if(language == "CPP-Testing"){
           model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d[1:(length(d)-n+n1+n2)], N=maxit, #Avner: For d=d had to change to match with the size of the data variable. Should probably be done for parallel=TRUE as well
                                    parameter_starts = parameter_starts, tol = tol))
@@ -192,9 +201,6 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
                                                                              parameter_starts = parameter_starts, tol = tol))
 
       }
-      #model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_interval, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
-      #                         parameter_starts = parameter_starts, tol = tol))
-
       
       Estimate_df_new <- data.frame(matrix(nrow = length(model_list_new), ncol = 7))
       

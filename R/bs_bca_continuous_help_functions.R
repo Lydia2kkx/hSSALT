@@ -4,6 +4,7 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
                                   tau, r, B, delta, maxit, tol, language){
   
   #Avner: I don't think this is necessary since we use the MLEhSSALT function
+  #Yao: Yes, please removed.
   # if(censoring == 2){
   #   tau <- c(tau[1], data[r])
   # }
