@@ -79,7 +79,8 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       t22_new <- apply(cbind(T2_new, tau[2]), 1, min) # observed or censored data
       
       # #Avner: Type-2 adapted from MLE_Exp.R
-      # #Yao: No need for this part. 
+      # #Yao: Your change is also correct for type 2, but not for type 1 with full data. So I made the
+      # change above.  
       # n_c <- length(data)
       # if (censoring == 2){
       #   #n2 <- r-n1
