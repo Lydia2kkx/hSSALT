@@ -35,7 +35,7 @@
 CIhSSALT <- function(data, n, MLEhSSALT_Obj, censoring = 1, tau, r=NULL, monitoring = "continuous",
                      delta = NULL, CImethod = "asymptotic", alpha = 0.05, B = 1000, maxit = 1000, 
                      tol=1e-8, language = "CPP"){
-  
+  data <- sort(data)
   theta1 <- MLEhSSALT_Obj$mle$theta1
   theta21 <- MLEhSSALT_Obj$mle$theta21
   theta22 <- MLEhSSALT_Obj$mle$theta22

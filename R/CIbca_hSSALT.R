@@ -1,7 +1,6 @@
 
 CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
                         theta1, theta21, theta22, p, maxit, tol, language){
-  data <- sort(data)
   #Avner: I don't it's necessary because we use the MLEhSSALT function 
   #Yao: Yes, I removed and put it in BCa. For Type-II, it causes error.
 

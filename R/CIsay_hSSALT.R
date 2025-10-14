@@ -1,7 +1,7 @@
 
 
 CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, theta1, p, theta21, theta22){
-  
+  #Yao: please also consider the data as full or censored data, adjust the code accordingly. 
   # Interval case
   if(monitoring=="interval"){
     
@@ -119,12 +119,9 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         theta1_approxCI_low <- mle1 - Cn * bias - qnorm(1-alpha/2)*sqrt(V1)
         theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
         #Yao: please check if this asNumeric function can be replaced by any other basic function
-        theta1_approxCI_low <- sapply(theta1_approxCI_low[1], Rmpfr::asNumeric) 
+        theta1_approxCI_low <- Rmpfr::asNumeric(theta1_approxCI_low)
         theta1_approxCI_up <- mle1 - Cn * bias + qnorm(1-alpha/2)*sqrt(V1)
-        theta1_approxCI_up <- sapply(theta1_approxCI_up[1], Rmpfr::asNumeric)})
-        
-        theta1_approxCI_low2 <- Rmpfr::asNumeric(theta1_approxCI_low[1])
-        theta1_approxCI_up2  <- Rmpfr::asNumeric(theta1_approxCI_up[1])
+        theta1_approxCI_up <- Rmpfr::asNumeric(theta1_approxCI_up)})
         
       }else{
         
@@ -194,6 +191,7 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         ###The case with a relatively large sample size (e.g., n = 50)
         ###High precision computation is needed
         #T1_simu <- mpfr(rexp(n, rate = 1/theta1), 256) # 256 can be increased
+        suppressWarnings({
         T1_simu <- Rmpfr::mpfr(1, 256)*data
         n1 <- sum(T1_simu <= tau)
         T1 <- sort(T1_simu[T1_simu <= tau])
@@ -222,9 +220,9 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         bias <- bias_Mpfr_modify(mle1, n = Rmpfr::mpfr(n, 256), r = r)  #n = mpfr(n, 512) when n = 200
         theta1_approxCI_low <- mle1 - bias - qnorm(1-alpha/2)*sqrt(V1)
         theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
-        theta1_approxCI_low <- sapply(theta1_approxCI_low[1], Rmpfr::asNumeric)
+        theta1_approxCI_low <- Rmpfr::asNumeric(theta1_approxCI_low)
         theta1_approxCI_up <- mle1 - bias + qnorm(1-alpha/2)*sqrt(V1)
-        theta1_approxCI_up <- sapply(theta1_approxCI_up[1], Rmpfr::asNumeric)
+        theta1_approxCI_up <- Rmpfr::asNumeric(theta1_approxCI_up)})
       }else{
         
         T1 <- data[data<tau[1]]
