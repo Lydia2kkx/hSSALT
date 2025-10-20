@@ -50,7 +50,6 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
     theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
     theta1_approxCI_up <- theta1 + qnorm(1-alpha/2)*sqrt(V_theta1)
     
-    n2 <- sum(n2j)
     nf <- n1+n2
     
     loglik_i_interval <- function(x){
@@ -79,7 +78,7 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
       # Theta1, Type I
       
       #Avner: Changed from 50 to 30 to check stability
-      if(n>30){
+      if(n>25){
         suppressWarnings({
         ###The case with a relatively large sample size (e.g., n = 50)
         ###High precision computation is needed
@@ -118,19 +117,23 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         
         theta1_approxCI_low <- mle1 - Cn * bias - qnorm(1-alpha/2)*sqrt(V1)
         theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
-        #Yao: please check if this asNumeric function can be replaced by any other basic function
-        theta1_approxCI_low <- Rmpfr::asNumeric(theta1_approxCI_low)
+        #Avner: Reverted to previous version because new version caused errors.
+        theta1_approxCI_low <- sapply(theta1_approxCI_low[1], Rmpfr::asNumeric)
+        #theta1_approxCI_low <- Rmpfr::asNumeric(theta1_approxCI_low)
         theta1_approxCI_up <- mle1 - Cn * bias + qnorm(1-alpha/2)*sqrt(V1)
-        theta1_approxCI_up <- Rmpfr::asNumeric(theta1_approxCI_up)})
+        #Avner: Same as above
+        theta1_approxCI_up <- sapply(theta1_approxCI_up[1], Rmpfr::asNumeric)})
+        #theta1_approxCI_up <- Rmpfr::asNumeric(theta1_approxCI_up)})
         
       }else{
         
         T1 <- data[data<tau[1]]
         n1 <- length(T1)
-        T2 <- data[data>=tau[1]]
+        #T2 <- data[data>=tau[1]] #Avner: Not used later so not necessary (also would be problematic considering non-censored data)
         
         p1 <- 1 - exp(-tau[1]/mle1)
         p2 <- exp(-tau[1]/mle1) * (1 - p1*exp(-(tau[2]-tau[1])/theta21)  - (1-p1)*exp(-(tau[2]-tau[1])/theta22))
+              exp(-tau[1]/mle1) * (1 - p1*exp(-(tau[2]-tau[1])/theta21)  - (1-p1)*exp(-(tau[2]-tau[1])/theta22))
         p3 <- 1 - p1 - p2
         Cn <- 1/(1 - (1-p1)^n - (1-p2)^n + p3^n)
         
@@ -186,7 +189,7 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
     }else{######## Type II ###########
       
       
-      if(n>50){
+      if(n>25){
         #####################################
         ###The case with a relatively large sample size (e.g., n = 50)
         ###High precision computation is needed
@@ -220,9 +223,13 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
         bias <- bias_Mpfr_modify(mle1, n = Rmpfr::mpfr(n, 256), r = r)  #n = mpfr(n, 512) when n = 200
         theta1_approxCI_low <- mle1 - bias - qnorm(1-alpha/2)*sqrt(V1)
         theta1_approxCI_low <- ifelse(theta1_approxCI_low < 0, 0L, theta1_approxCI_low)
-        theta1_approxCI_low <- Rmpfr::asNumeric(theta1_approxCI_low)
+        #Avner: Reverted to older version due to error message
+        theta1_approxCI_low <- sapply(theta1_approxCI_low[1], Rmpfr::asNumeric)
+        #theta1_approxCI_low <- Rmpfr::asNumeric(theta1_approxCI_low)
         theta1_approxCI_up <- mle1 - bias + qnorm(1-alpha/2)*sqrt(V1)
-        theta1_approxCI_up <- Rmpfr::asNumeric(theta1_approxCI_up)})
+        #Avner: Same as above
+        theta1_approxCI_up <- sapply(theta1_approxCI_up[1], Rmpfr::asNumeric)})
+        #theta1_approxCI_up <- Rmpfr::asNumeric(theta1_approxCI_up)})
       }else{
         
         T1 <- data[data<tau[1]]
@@ -258,7 +265,7 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
       # sample_dat_2nd is the observations under the second stress level
       sample_dat_2nd <- data[data>=tau[1]]
       # tr is the rth ordered failure, we expect data to be ordered
-      tr <- sample_dat_2nd[r-n1]
+      tr <- sample_dat_2nd[r-n1] #Avner: Doesn't seem to be used after its defined.
       sample_dat_2nd <- sample_dat_2nd[1:(r-n1)]
       
       loglik_ii_cont <- function(x){
@@ -290,7 +297,7 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
   p_approxCI_up <- p + qnorm(1-alpha/2)*sqrt(Vp)
   p_approxCI_up <- ifelse(p_approxCI_up > 1, 1L, p_approxCI_up)
   
-  if (n>30 && monitoring=="continuous") {
+  if (n>25 && monitoring=="continuous") {
     p_approxCI_low <- sapply(p_approxCI_low[1], Rmpfr::asNumeric)
     p_approxCI_up <- sapply(p_approxCI_up[1], Rmpfr::asNumeric)
   }

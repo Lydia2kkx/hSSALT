@@ -1,8 +1,6 @@
 
 CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
                         theta1, theta21, theta22, p, maxit, tol, language){
-  #Avner: I don't it's necessary because we use the MLEhSSALT function 
-  #Yao: Yes, I removed and put it in BCa. For Type-II, it causes error.
 
   bootstrap_distri_list <- bootstrap_distribution(data, n, monitoring = monitoring, theta1 = theta1, theta21 = theta21,
                                              theta22 = theta22, p = p, censoring, tau, r, B, delta = delta, maxit, tol, 
@@ -45,7 +43,8 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
     T2 <- data[data>=tau[1]] #Avner: Only correct if data is censored, no? #Yao: Correct.  
     #Yao: add the next few lines
     if(length(data) == n){
-      t22 <- T2[T2<=tau[2]]
+      t22 <- T2[T2<=tau[2]] #Avner: I'm not sure why the if-else is necessary. I think it's fine to just run this line without the if-else (so in all cases; censored/uncensored).
+                            #But probably correct as is, unless somehow the sample is weirdly censored or n is incorrectly given or I don't know.
     }else{
       t22 <- T2
     }
@@ -96,6 +95,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
 
       #Avner: For testing I changed it to CPP-Testing to just skip and go straight to the R function. Fixes a lot of problems so I suggest to remove this
       #Yao: Change back to "CPP"?
+      #Avner: I'd suggest just removing the if language part and using R regardless of language variable. Otherwise there are discrepancies between the intervals using R or CPP
       if(language == "CPP-Testing"){
           model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d[1:(length(d)-n+n1+n2)], N=maxit, #Avner: For d=d had to change to match with the size of the data variable. Should probably be done for parallel=TRUE as well
                                    parameter_starts = parameter_starts, tol = tol))
