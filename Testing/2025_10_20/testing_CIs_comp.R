@@ -217,37 +217,37 @@ df.iii <- data.frame(
 #alpha <- 0.90
 resMLE.2 <- MLEhSSALT(data,n,2,r=r,tau=tau,theta21 = theta21,theta22 = theta22,p=p,language = "CPP", monitoring="continuous")
 
-CI_i.11 <- CIhSSALT(data, n, 2, r=n, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, alpha = 0.1)
+CI_i.11 <- CIhSSALT(data, n, 2, r=r, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, alpha = 0.1)
 row1 <- round(as.numeric(unlist(CI_i.11)[-c(9,10,12)]),2)
 
-CI_i.12 <- CIhSSALT(data, n, 2, r=n, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, CImethod="percentile", alpha = 0.1)
+CI_i.12 <- CIhSSALT(data, n, 2, r=r, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, CImethod="percentile", alpha = 0.1)
 row2 <- round(as.numeric(unlist(CI_i.12)[-c(9,10,12)]),2)
 
-CI_i.13 <- CIhSSALT(data, n, 2, r=n, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, CImethod="bca", alpha = 0.1)
+CI_i.13 <- CIhSSALT(data, n, 2, r=r, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, CImethod="bca", alpha = 0.1)
 row3 <- round(as.numeric(unlist(CI_i.13)[-c(9,10,12)]),2)
 
 #alpha <- 0.95
 resMLE.2 <- MLEhSSALT(data,n,2,r=r,tau=tau,theta21 = theta21,theta22 = theta22,p=p,language = "CPP", monitoring="continuous")
 
-CI_i.21 <- CIhSSALT(data, n, 2, r=n, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B)
+CI_i.21 <- CIhSSALT(data, n, 2, r=r, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B)
 row4 <- round(as.numeric(unlist(CI_i.21)[-c(9,10,12)]),2)
 
-CI_i.22 <- CIhSSALT(data, n, 2, r=n, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, CImethod="percentile")
+CI_i.22 <- CIhSSALT(data, n, 2, r=r, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, CImethod="percentile")
 row5 <- round(as.numeric(unlist(CI_i.22)[-c(9,10,12)]),2)
 
-CI_i.23 <- CIhSSALT(data, n, 2, r=n, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, CImethod="bca")
+CI_i.23 <- CIhSSALT(data, n, 2, r=r, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, CImethod="bca")
 row6 <- round(as.numeric(unlist(CI_i.23)[-c(9,10,12)]),2)
 
 #alpha <- 0.99
 resMLE.2 <- MLEhSSALT(data,n,2,r=r,tau=tau,theta21 = theta21,theta22 = theta22,p=p,language = "CPP", monitoring="continuous")
 
-CI_i.31 <- CIhSSALT(data, n, 2, r=n, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, alpha = 0.01)
+CI_i.31 <- CIhSSALT(data, n, 2, r=r, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, alpha = 0.01)
 row7 <- round(as.numeric(unlist(CI_i.31)[-c(9,10,12)]),2)
 
-CI_i.32 <- CIhSSALT(data, n, 2, r=n, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, CImethod="percentile", alpha = 0.01)
+CI_i.32 <- CIhSSALT(data, n, 2, r=r, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, CImethod="percentile", alpha = 0.01)
 row8 <- round(as.numeric(unlist(CI_i.32)[-c(9,10,12)]),2)
 
-CI_i.33 <- CIhSSALT(data, n, 2, r=n, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, CImethod="bca", alpha = 0.01)
+CI_i.33 <- CIhSSALT(data, n, 2, r=r, tau = tau, MLEhSSALT_Obj = resMLE.2, language = "CPP",monitoring = "continuous", B = B, CImethod="bca", alpha = 0.01)
 row9 <- round(as.numeric(unlist(CI_i.33)[-c(9,10,12)]),2)
 
 df.iii.funcs <- rbind(row1, row2, row3, row4, row5, row6, row7, row8, row9)
@@ -265,11 +265,11 @@ df.iii.diffs
 # write.csv(df.i, "dfi.csv", row.names = FALSE)
 # write.csv(df.i.funcs, "dfifuncs.csv", row.names = FALSE)
 # write.csv(df.i.diffs, "dfidifffs.csv", row.names = FALSE)
-# 
+#
 # write.csv(df.ii, "dfii.csv", row.names = FALSE)
 # write.csv(df.ii.funcs, "dfiifuncs.csv", row.names = FALSE)
 # write.csv(df.ii.diffs, "dfiidiffs.csv", row.names = FALSE)
-# 
+#
 # write.csv(df.iii, "dfiii.csv", row.names = FALSE)
 # write.csv(df.iii.funcs, "dfiiifuncs.csv", row.names = FALSE)
 # write.csv(df.iii.diffs, "dfiiidiffs.csv", row.names = FALSE)
