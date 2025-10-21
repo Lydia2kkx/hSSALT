@@ -96,6 +96,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       #Avner: For testing I changed it to CPP-Testing to just skip and go straight to the R function. Fixes a lot of problems so I suggest to remove this
       #Yao: Change back to "CPP"?
       #Avner: I'd suggest just removing the if language part and using R regardless of language variable. Otherwise there are discrepancies between the intervals using R or CPP
+      #Yao: Ok.
       if(language == "CPP-Testing"){
           model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d[1:(length(d)-n+n1+n2)], N=maxit, #Avner: For d=d had to change to match with the size of the data variable. Should probably be done for parallel=TRUE as well
                                    parameter_starts = parameter_starts, tol = tol))

@@ -265,13 +265,14 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
       # sample_dat_2nd is the observations under the second stress level
       sample_dat_2nd <- data[data>=tau[1]]
       # tr is the rth ordered failure, we expect data to be ordered
-      tr <- sample_dat_2nd[r-n1] #Avner: Doesn't seem to be used after its defined.
+      tr <- sample_dat_2nd[r-n1] #Avner: Doesn't seem to be used after its defined. #Yao: remove it
       sample_dat_2nd <- sample_dat_2nd[1:(r-n1)]
       
       loglik_ii_cont <- function(x){
         theta21 <- x[1]
         theta22 <- x[2]
-        p <- x[3]
+        p <- x[3] 
+        #Yao: in my code, I use tr instead of max(sample_dat_2nd) here. But it is fine. 
         sum(log(p/theta21*exp(-(sample_dat_2nd-tau)/theta21)+(1-p)/theta22*exp(-(sample_dat_2nd-tau)/theta22))) +
           (n-r)*log(p*exp(-(max(sample_dat_2nd)-tau)/theta21)+(1-p)*exp(-(max(sample_dat_2nd)-tau)/theta22))
       }
@@ -297,6 +298,7 @@ CIsay_hSSALT <- function(data, n, censoring, tau , r, monitoring, delta, alpha, 
   p_approxCI_up <- p + qnorm(1-alpha/2)*sqrt(Vp)
   p_approxCI_up <- ifelse(p_approxCI_up > 1, 1L, p_approxCI_up)
   
+  #Yao: Do we also need the following if?
   if (n>25 && monitoring=="continuous") {
     p_approxCI_low <- sapply(p_approxCI_low[1], Rmpfr::asNumeric)
     p_approxCI_up <- sapply(p_approxCI_up[1], Rmpfr::asNumeric)
