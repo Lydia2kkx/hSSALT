@@ -42,12 +42,16 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
     n1 <- length(T1)
     T2 <- data[data>=tau[1]] #Avner: Only correct if data is censored, no? #Yao: Correct.  
     #Yao: add the next few lines
-    if(length(data) == n){
-      t22 <- T2[T2<=tau[2]] #Avner: I'm not sure why the if-else is necessary. I think it's fine to just run this line without the if-else (so in all cases; censored/uncensored).
-                            #But probably correct as is, unless somehow the sample is weirdly censored or n is incorrectly given or I don't know.
-    }else{
-      t22 <- T2
-    }
+    #Avner: This line below, without the if-else, works always (I think), because tau[2] should always exist.
+    #       Because in Type-2 you always should have at least r observations and in Type-I it is just pre-specified
+    #       Any edge cases (less than r observations etc) should probably be checked in the main function checks and not here.
+    t22 <- T2[T2<=tau[2]]
+    # if(length(data) == n){
+    #   t22 <- T2[T2<=tau[2]] #Avner: I'm not sure why the if-else is necessary. I think it's fine to just run this line without the if-else (so in all cases; censored/uncensored).
+    #                         #But probably correct as is, unless somehow the sample is weirdly censored or n is incorrectly given or I don't know.
+    # }else{
+    #   t22 <- T2
+    # }
     n2 <- length(t22)
     
     mle1ij <- c()

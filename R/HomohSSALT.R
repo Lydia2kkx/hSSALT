@@ -129,7 +129,8 @@ HomohSSALT <- function(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 
   j <- 1
   CVs <- rep(0, M)
   while (j <= M) {
-    set.seed(seed)
+    #Avner: Commented out the set.seed for now
+    #set.seed(seed)
     simu_sample <- sort(rexp(n2_num))
     if(censoring == 1){
       censored_point <- -log(1 - n_c_data/n2_num)
