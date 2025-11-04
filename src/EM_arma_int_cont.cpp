@@ -192,7 +192,8 @@ List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::
   double p2 = 1 - exp(-delta/thirdcol[(ind-1)]);
   
   DataFrame results;
-  bool Flag = false;
+  //Avner: Removed Flag variable. Isn't necessary and causes warning when running devtools::check()
+  //bool Flag = false;
   
   // std::cout << "outside\n";
   // 
@@ -261,7 +262,7 @@ List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::
           _["posterior"] = posterior
         );
       }
-      Flag = true;
+      //Flag = true;
       break;
     }
     
@@ -271,40 +272,41 @@ List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::
     k++;
   }
   
-  
-  if (!Flag) {
-    double p_helper = omega1;
-    double theta21, theta22;
-    if(p1 <= p2){
-      theta21 = -delta/std::log(1 - p2);
-      theta22 = -delta/std::log(1 - p1);
-      omega1 = omega2;
-      omega2 = p_helper;
-    }else{
-      theta21 = -delta/std::log(1 - p1);
-      theta22 = -delta/std::log(1 - p2);
-    }
-    
-    std::string message;
-    arma::mat posterior;
-    if(k <= (N-1)){
-      message = "convergent";
-      posterior.set_size(data.n_elem, 2);
-      posterior.col(0) = tau1;
-      posterior.col(1) = tau2;
-    } else{
-      message = "not convergent";
-      posterior.set_size(0,0);
-    }
-    
-    results = DataFrame::create(Named("p1") = omega1, Named("p2") = omega2, Named("theta21") = theta21, Named("theta22") = theta22,
-                                      Named("loglik") = loglik[k], Named("iteration") = k, Named("message") = message);
-    
-    return List::create(
-      _["results"] = results,
-      _["posterior"] = posterior
-    );
-    
+  //Avner: The if-Flag part causes a warning when creating the R package. It isn't necessary logically so removed
+  //if (!Flag) {
+  double p_helper = omega1;
+  double theta21, theta22;
+  if(p1 <= p2){
+    theta21 = -delta/std::log(1 - p2);
+    theta22 = -delta/std::log(1 - p1);
+    omega1 = omega2;
+    omega2 = p_helper;
+  }else{
+    theta21 = -delta/std::log(1 - p1);
+    theta22 = -delta/std::log(1 - p2);
   }
+  
+  std::string message;
+  arma::mat posterior;
+  if(k <= (N-1)){
+    message = "convergent";
+    posterior.set_size(data.n_elem, 2);
+    posterior.col(0) = tau1;
+    posterior.col(1) = tau2;
+  } else{
+    message = "not convergent";
+    posterior.set_size(0,0);
+  }
+  
+  results = DataFrame::create(Named("p1") = omega1, Named("p2") = omega2, Named("theta21") = theta21, Named("theta22") = theta22,
+                                    Named("loglik") = loglik[k], Named("iteration") = k, Named("message") = message);
+  
+  return List::create(
+    _["results"] = results,
+    _["posterior"] = posterior
+  );
+
+  //Avner: Commenting the Flag closing bracket  
+  //}
   
 }

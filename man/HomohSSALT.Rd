@@ -4,7 +4,17 @@
 \alias{HomohSSALT}
 \title{Homogeneity test for hSSALT}
 \usage{
-HomohSSALT(data, n, censoring=1, tau, r, alpha = 0.05, M = 10000)
+HomohSSALT(
+  data,
+  n,
+  censoring = 1,
+  tau,
+  r = NULL,
+  alpha = 0.05,
+  M = 10000,
+  setSEED = FALSE,
+  seed = 9412
+)
 }
 \arguments{
 \item{data}{sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.}
@@ -15,11 +25,15 @@ HomohSSALT(data, n, censoring=1, tau, r, alpha = 0.05, M = 10000)
 
 \item{tau}{If censoring type is \code{1}, \code{tau} is a vector with length 2; if censoring type is \code{2}, \code{tau} is a positive numeric value.}
 
-\item{r}{If censoring type is \code{2}, \code{r} provides the pre-specified number of failures, a positive integer.}
+\item{r}{If censoring type is \code{2}, \code{r} provides the pre-specified number of failures, a positive integer. Default value is \code{NULL}.}
 
 \item{alpha}{significance level. Default value is \code{0.05}.}
 
 \item{M}{number of simulations used to generate critical values, a positive integer. Default value is \code{10000}.}
+
+\item{setSEED}{logical, indicates whether to set a fixed random seed to simulate the critical value. Default value is \code{FALSE}.}
+
+\item{seed}{seed value used when \code{setSEED} is \code{TRUE}, a positive integer. Default value is \code{9412}.}
 }
 \value{
 An \code{hSSALTtest} object containing a hypothesis test table that reports the test statistic, the simulated critical value at the given significance level, the alternative hypothesis, and the test decision.

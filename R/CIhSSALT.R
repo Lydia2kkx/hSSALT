@@ -148,7 +148,7 @@ CIhSSALT <- function(data, n, MLEhSSALT_Obj, censoring = 1, tau, r=NULL, monitor
   }
   
   ###Check MLE Object
-  if (class(MLEhSSALT_Obj) != "hSSALTMLE") {
+  if (!inherits(MLEhSSALT_Obj, "hSSALTMLE")) {
     stop("Expected an object of class 'hSSALTMLE'.")
   }
   if (MLEhSSALT_Obj$message != "convergent") {

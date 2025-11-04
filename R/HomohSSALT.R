@@ -2,15 +2,16 @@
 #'
 #' Perform a homogeneity test under the second stress level \code{s2} of a simple hSSALT model with exponential (continuous) distribution.
 #'
-#' @usage HomohSSALT(data, n, censoring=1, tau, r, alpha = 0.05, M = 10000)
 #'
 #' @param data sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.
 #' @param n sample size, a positive integer.
 #' @param censoring \code{1} for Type-I censoring or \code{2} for Type-II censoring. Default value is \code{1}.
 #' @param tau If censoring type is \code{1}, \code{tau} is a vector with length 2; if censoring type is \code{2}, \code{tau} is a positive numeric value.
-#' @param r If censoring type is \code{2}, \code{r} provides the pre-specified number of failures, a positive integer.
+#' @param r If censoring type is \code{2}, \code{r} provides the pre-specified number of failures, a positive integer. Default value is \code{NULL}.
 #' @param alpha significance level. Default value is \code{0.05}.
 #' @param M number of simulations used to generate critical values, a positive integer. Default value is \code{10000}.
+#' @param setSEED logical, indicates whether to set a fixed random seed to simulate the critical value. Default value is \code{FALSE}.
+#' @param seed seed value used when \code{setSEED} is \code{TRUE}, a positive integer. Default value is \code{9412}.
 #'
 #' @return An \code{hSSALTtest} object containing a hypothesis test table that reports the test statistic, the simulated critical value at the given significance level, the alternative hypothesis, and the test decision.
 #'
@@ -21,7 +22,7 @@
 
 
 
-HomohSSALT <- function(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 10000){
+HomohSSALT <- function(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 10000, setSEED = FALSE, seed = 9412){
   ### Part 1: Check Validity of Given Input
   ###Check the input of parameter n
   if (missing(n)) {
@@ -56,18 +57,25 @@ HomohSSALT <- function(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 
     if(is.null(r)){
       stop("Error: Missing r")
     }else{
-      if(r < 0 || !is.numeric(r) || length(r) != 1){
-        stop("Invalid argument 'r'! The value of 'r' should be a positive number")
+      if(r < 0 || !is.numeric(r) || length(r) != 1 || r != as.integer(r)){
+        stop("Invalid argument 'r'! The value of 'r' should be a positive integer")
       }
     }
   }
   
-  if (any(alpha < 0, alpha > 1)) {
+  if (length(alpha) != 1 || !is.numeric(alpha) || alpha > 1 || alpha < 0) {
     stop("Invalid argument 'alpha'! The value of 'alpha' should be a in range (0,1)")
+  }  
+  if (length(M) != 1 || !is.numeric(M) || M != as.integer(M) || M < 0) {
+    stop("Invalid argument 'M'! The value of 'M' should be a positive integer")
   }
   
-  if(any(is.integer(M), M < 0)){
-    stop("Invalid argument 'M'! The value of 'M' should be a positive integer")
+  ###Check input of setSEED and seed
+  if (!is.logical(setSEED) || length(setSEED) != 1) {
+    stop("Invalid argument 'setSEED'! The value of 'setSEED' must be either TRUE or FALSE")
+  }
+  if (length(seed) != 1 || !is.numeric(seed) || seed != as.integer(seed) || seed <= 0) {
+    stop("Invalid argument 'seed'! The value of 'seed' should be a positive integer")
   }
   ############################################################################
   ############# Part 1 first stress level
@@ -125,12 +133,12 @@ HomohSSALT <- function(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 
   
   ########Simulate the critical value
   TSs <- rep(0, M)
-  seed <- 1
   j <- 1
   CVs <- rep(0, M)
   while (j <= M) {
-    #Avner: Commented out the set.seed for now
-    #set.seed(seed)
+    if (setSEED) {
+      set.seed(seed) 
+    }
     simu_sample <- sort(rexp(n2_num))
     if(censoring == 1){
       censored_point <- -log(1 - n_c_data/n2_num)
@@ -158,6 +166,15 @@ HomohSSALT <- function(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 
   }
   CV_data <- quantile(CVs, probs = 1 - alpha)[[1]]
   
+  ##########Check if test statistic is too close to the critical value
+  #Avner: Added 'closeness_warning' just for testing. To be removed later.
+  if (abs(TS - CV_data) / abs(CV_data) < 0.05) {
+    warning("Test statistic is close to the critical value. Consider increasing 'M' for greater accuracy.")
+    closeness_warning <- TRUE
+  } else {
+    closeness_warning <- FALSE
+  }
+  
   ##########Decision
   decision <- if (TS > CV_data) {
     "Reject H0, data under the second stress level is heterogeneous"
@@ -171,7 +188,9 @@ HomohSSALT <- function(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 
     alternative = "Data are heterogeneous under second stress level",
     method = "Homogeneity Test for hSSALT",
     data.name = "Second stress level data",
-    decision = decision
+    decision = decision,
+    #Avner: See above regarding 'closeness_warning'
+    closeness_warning = closeness_warning
   )
   
   class(result) <- "hSSALTtest"

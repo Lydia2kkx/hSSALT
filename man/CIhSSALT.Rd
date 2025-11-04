@@ -6,8 +6,7 @@
 \usage{
 CIhSSALT(data, n, MLEhSSALT_Obj, censoring = 1, tau, r = NULL, 
          monitoring = "continuous", delta = NULL, CImethod = "asymptotic", 
-         alpha = 0.05, B = 1000, maxit = 1000, tol = 1e-8, language = "CPP", 
-         parallel = FALSE, ncores = 2)
+         alpha = 0.05, B = 1000, maxit = 1000, tol = 1e-8, language = "CPP")
 }
 \arguments{
 \item{data}{sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.}
@@ -37,10 +36,6 @@ CIhSSALT(data, n, MLEhSSALT_Obj, censoring = 1, tau, r = NULL,
 \item{tol}{Tolerance limit for declaring algorithm convergence based on the change between two consecutive iterations. Only for bootstrap methods. Default value is \code{1e-8}.}
 
 \item{language}{\code{"R"} or \code{"CPP"}. Only for bootstrap methods. Default value is \code{"CPP"}.}
-
-\item{parallel}{support parallel computation, a logical value. Only for bootstrap methods. Default value is \code{FALSE}.}
-
-\item{ncores}{the number of cores that are used in parallelization, a positive integer.}
 }
 \value{
 A \code{CIhSSALT} object that includes the type of returned CIs and the CIs for four parameters at a given significance level.

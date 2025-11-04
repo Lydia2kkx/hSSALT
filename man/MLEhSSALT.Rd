@@ -6,7 +6,7 @@
 \usage{
 MLEhSSALT(data, n, censoring = 1, tau, r = NULL, monitoring = "continuous", 
           delta = NULL, theta21, theta22, p, maxit = 1000, 
-          tol = 1e-8, language = "CPP", parallel = FALSE, ncores = 2)
+          tol = 1e-8, language = "CPP")
 }
 \arguments{
 \item{data}{sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.}
@@ -34,10 +34,6 @@ MLEhSSALT(data, n, censoring = 1, tau, r = NULL, monitoring = "continuous",
 \item{tol}{Tolerance limit for declaring algorithm convergence based on the change between two consecutive iterations. Default value is \code{1e-8}.}
 
 \item{language}{\code{"R"} or \code{"CPP"}. Only for bootstrap methods. Default value is \code{"CPP"}.}
-
-\item{parallel}{support parallel computation for multiple initial values, a logical value. Default value is \code{FALSE}.}
-
-\item{ncores}{the number of cores that are used in parallelization, a positive integer.}
 }
 \description{
 Provide point estimation of a simple hSSALT model with exponential (continuous) or geometric (interval) distribution.
