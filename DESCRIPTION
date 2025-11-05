@@ -2,10 +2,10 @@ Package: hSSALT
 Type: Package
 Title: Simple Heterogeneous Step Stress Accelerated Life Testing (hSSALT) Model
 Version: 0.1.0
-Authors@R: c(person("Yao", "Lu", email = "lu@isw.rwth-aachen.de", role = c("aut", "cre")),
+Authors@R: c(person("Yao", "Lu", email = "yao.lu1@rwth-aachen.de", role = c("aut", "cre")),
     	     person("Avner", "Merims", email = "avner.merims@rwth-aachen.de", role = "ctb"))
 Author: Yao Lu [aut, cre], Avner Merims [ctb]
-Maintainer: Yao Lu <lu@isw.rwth-aachen.de>
+Maintainer: Yao Lu <yao.lu1@rwth-aachen.de>
 Description: This package offers a comprehensive framework for analyzing a simple
  heterogeneous step stress accelerated life testing (hSSALT) model, assuming the
  cumulative exposure (CE) model and heterogeneity with two subgroups under the

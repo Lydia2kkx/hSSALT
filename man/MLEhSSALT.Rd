@@ -9,7 +9,7 @@ MLEhSSALT(data, n, censoring = 1, tau, r = NULL, monitoring = "continuous",
           tol = 1e-8, language = "CPP")
 }
 \arguments{
-\item{data}{sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.}
+\item{data}{sample, a vector. The given data should be a vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.}
 
 \item{n}{sample size, a positive integer.}
 

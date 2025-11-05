@@ -6,7 +6,7 @@
 #'           delta = NULL, theta21, theta22, p, maxit = 1000, 
 #'           tol = 1e-8, language = "CPP")
 #'
-#' @param data sample, a vector. The given data should be a censored vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.
+#' @param data sample, a vector. The given data should be a vector with observations less than or equal to \code{n}. When censoring type is \code{2}, the length of \code{data} should be \code{r}.
 #' @param n sample size, a positive integer.
 #' @param censoring \code{1} for Type-I censoring or \code{2} for Type-II censoring. Default value is \code{1}.
 #' @param tau If censoring type is \code{1}, \code{tau} is a vector with length 2; if censoring type is \code{2}, \code{tau} is a positive numeric value.
