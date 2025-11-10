@@ -1,6 +1,5 @@
-### Compute mle1 in interval case
+###Compute mle1 in interval case
 func_theta1_int <- function(x, n ,n1j, n1, tau1, tau1j, tau1j0){
-  ### Vector calculation
   sum(n1j*(exp(-tau1j0/x)*tau1j0 - exp(-tau1j/x)*tau1j) / (exp(-tau1j0/x) - exp(-tau1j/x))) + tau1*(n-n1)
 }
 
@@ -20,7 +19,6 @@ EM_algorithm_interval <- function(ind, data , N, delta , d, parameter_starts, q2
   
   k<-2
   
-  # loop
   while((abs(loglik[k]-loglik[k-1]) >= tol) & (k <= N)) {
     # E step
     sum.of.comps1 <- omega1*dgeom(data, p1)+omega2*dgeom(data, p2)
@@ -35,7 +33,6 @@ EM_algorithm_interval <- function(ind, data , N, delta , d, parameter_starts, q2
     p1 <- sum_finite(hijk1*d)/sum_finite(hijk1*(d*(data+1) + (1-d)*q2))
     p2 <- sum_finite(hijk2*d)/sum_finite(hijk2*(d*(data+1) + (1-d)*q2))
     
-    #Avner: Matching with C++ function
     if (abs(p1 - 1) < 1e-128 || abs(p2 - 1) < 1e-128) {
       p_helper = omega1
       if (p1 <= p2) {

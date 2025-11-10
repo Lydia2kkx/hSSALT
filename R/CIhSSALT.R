@@ -86,7 +86,6 @@ CIhSSALT <- function(data, n, MLEhSSALT_Obj, censoring = 1, tau, r=NULL, monitor
     warning("Invalid argument 'monitoring'! monitoring is 'continuous' or 'interval'.
             monitoring = 'continuous' is used instead")
   }
-  ######The following check is newly added.
   if ((monitoring == "continuous") + (!is.null(delta))  == 2){
     warning("Conflict in argument 'monitoring' and delta'! monitoring = 'continuous' is used instead")
   }
@@ -115,7 +114,7 @@ CIhSSALT <- function(data, n, MLEhSSALT_Obj, censoring = 1, tau, r=NULL, monitor
     }
   }
   
-  if (length(tol) != 1 || length(maxit) != 1) { # Added
+  if (length(tol) != 1 || length(maxit) != 1) {
     stop("Arguments 'tol' and 'maxit' must not be given as vectors")
   }
   

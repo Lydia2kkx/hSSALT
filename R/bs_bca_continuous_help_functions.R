@@ -3,29 +3,17 @@
 bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22, p, censoring,
                                   tau, r, B, delta, maxit, tol, language){
   
-  #Avner: I don't think this is necessary since we use the MLEhSSALT function
-  #Yao: Yes, please removed.
-  # if(censoring == 2){
-  #   tau <- c(tau[1], data[r])
-  # }
-  
-  #Avner: Simple Grid for now
-  p_grid <- p
-  theta21_grid <- theta21
-  theta22_grid <- theta22
-  
   same_threshold <- 0.05
   p_threshold <- 0.01
-  p_adjust <- TRUE ##adjust p with same results to 0.5
-  data_adjust <- TRUE ##discard same results of theta21 and theta22
+  p_adjust <- TRUE ##Adjust p with same results to 0.5
+  data_adjust <- TRUE ##Discard same results of theta21 and theta22
   
   j <- 1
-  iter <- 1 ## iteration counter (how many times we need to obtain B times valid results)
+  iter <- 1 ## Iteration counter
   Results <- list()
   
   while (j <= B){
     
-    #Avner: Added censoring and r
     sample <- suppressWarnings(rhSSALT(n, censoring = censoring, r = r, tau = tau, theta1 = theta1, theta21 = theta21, theta22 = theta22,
                                        p = p, monitoring = monitoring, delta = delta))
     n1 <- sample$Censored_num_level[1]
@@ -36,10 +24,10 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
       next
     }
     
-    #Avner: Added censoring and r
-    MLE_results <- suppressWarnings(MLEhSSALT(sample$Censored_dat, n, censoring = censoring, r = r, tau = tau, theta21 = theta21_grid, 
-                            theta22 = theta22_grid, p = p_grid, language = language,
+    MLE_results <- suppressWarnings(MLEhSSALT(sample$Censored_dat, n, censoring = censoring, r = r, tau = tau, theta21 = theta21, 
+                            theta22 = theta22, p = p, language = language,
                             monitoring = monitoring, delta = delta))
+    
     Estimate_df <- MLE_results$mle
     Estimate_df$loglik <- MLE_results$loglik
     Estimate_df$n2 <- n2
@@ -49,7 +37,7 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
       next
     }
     
-    if(is.na(Estimate_df$p1) || is.na(Estimate_df$theta1) || is.na(Estimate_df$theta22)){ ###If all NAs in prob1, next iteration
+    if(is.na(Estimate_df$p1) || is.na(Estimate_df$theta1) || is.na(Estimate_df$theta22)){
       iter <- iter + 1
       next
     }
@@ -58,7 +46,6 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
       iter <- iter + 1
       next
     }
-    
     
     if ((Estimate_df$p1 < p_threshold) | (Estimate_df$p2 < p_threshold) | (Estimate_df$theta22 - Estimate_df$theta21 <= same_threshold*Estimate_df$theta22)) {
       Estimate_df$info <- "homo"
@@ -79,11 +66,10 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
       iter <- iter + 1
       next
     }else{
-      Results[[j]] <- Estimate_df  ##Also provide iter as additional information in the result
+      Results[[j]] <- Estimate_df
     }
     iter <- iter + 1
-    j <- j + 1 ### increase the iteration counter
-    
+    j <- j + 1
   }
   
   ####Omit NAs in the result list
@@ -91,10 +77,6 @@ bootstrap_distribution <-function(data, n, monitoring, theta1, theta21, theta22,
   
   max_loglik <- lapply(Results_omit, find_max)
   max_loglik_df <- do.call("rbind.data.frame", max_loglik)
-  
-  #### Otherwise, it is very easy since find_max() is useless.
-  #### Boostrap Percentile CIs easily take the corresponding quantiles for each parameter
-  # bootstrap_distri <- cbind.data.frame(i = 1:nrow(max_loglik_df), max_loglik_df)
   
   return(list(cbind.data.frame(i = 1:nrow(max_loglik_df), max_loglik_df), iterations = iter - 1))
   

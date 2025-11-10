@@ -38,7 +38,7 @@ MLEhSSALT <- function(data, n, censoring = 1, tau, r = NULL, monitoring = "conti
   if (missing(n)) {
     stop("Error: Missing 'n'")
   }
-  if (length(n)>1 || n < 0 || !is.numeric(n)) { # Added vector check
+  if (length(n)>1 || n < 0 || !is.numeric(n)) {
     stop("Invalid argument 'n'! The value of 'n' should be a positive number")
   }
   ###Check the input of parameter censoring
@@ -50,7 +50,7 @@ MLEhSSALT <- function(data, n, censoring = 1, tau, r = NULL, monitoring = "conti
   if (missing(tau)) {
     stop("Error: Missing 'tau'")
   }
-  if (!is.numeric(tau) || any(tau < 0)) { # Added !is.numeric check
+  if (!is.numeric(tau) || any(tau < 0)) {
     stop("Invalid argument 'tau'! The values of 'tau' should be positive numbers")
   }
   ###Check the relation between s and tau
@@ -59,7 +59,6 @@ MLEhSSALT <- function(data, n, censoring = 1, tau, r = NULL, monitoring = "conti
     stop(paste("In type", censoring, "censoring, the number of stress levels (2) and the length of tau don't match"))
   }
   ###Check the input of parameter r
-  #Avner: This might be problematic with Type-2 intervals
   if (((censoring == 1) + !is.null(r)) == 2) {
     stop("Error: please check which censoring you want to use. If censoring is 1, r is not needed.
          If r is defined, censoring should be 2")
@@ -81,7 +80,7 @@ MLEhSSALT <- function(data, n, censoring = 1, tau, r = NULL, monitoring = "conti
             monitoring = 'continuous' is used instead")
   }
   
-  ######The following check is newly added.
+  ######Check the relation between monitoring and delta
   if ((monitoring == "continuous") + (!is.null(delta))  == 2){
     warning("Conflict in argument 'monitoring' and delta'! monitoring = 'continuous' is used instead")
   }
@@ -94,7 +93,7 @@ MLEhSSALT <- function(data, n, censoring = 1, tau, r = NULL, monitoring = "conti
     if (is.null(delta)) {
       stop("Error: Missing 'delta'")
     }
-    else if(delta < 0 || !is.numeric(delta)) { # removed ==2
+    else if(delta < 0 || !is.numeric(delta)) {
       stop("Invalid argument 'delta'! The value of 'delta' should be a positive number")
     }
     if (any((tau/delta) %% 1 != 0)) {
@@ -133,7 +132,7 @@ MLEhSSALT <- function(data, n, censoring = 1, tau, r = NULL, monitoring = "conti
     stop("Invalid argument 'p'! The value of 'p' should be a positive vector with entries <= 1")
   }
   
-  if (!is.numeric(theta21) || !is.numeric(theta22) || !is.numeric(p)) { # Added check
+  if (!is.numeric(theta21) || !is.numeric(theta22) || !is.numeric(p)) {
     stop("Argmunts 'p', 'theta21' and 'theta22' must be positive numbers")
   }
   
@@ -145,7 +144,7 @@ MLEhSSALT <- function(data, n, censoring = 1, tau, r = NULL, monitoring = "conti
     warning("Vector for initial values detected, the entries which return the largest log-likelihood are selected as the MLE")
   }
   
-  if (length(tol) != 1 || length(maxit) != 1) { # Added
+  if (length(tol) != 1 || length(maxit) != 1) {
     stop("Arguments 'tol' and 'maxit' must not be given as vectors")
   }
   
@@ -165,7 +164,6 @@ MLEhSSALT <- function(data, n, censoring = 1, tau, r = NULL, monitoring = "conti
             language = 'CPP' is used instead")
   }
   
-  # Main function
   
   if( monitoring == "continuous" ) {
     return(MLE_Exp(data = data, n = n, censoring, tau = tau, r, theta21 = theta21, 

@@ -71,7 +71,7 @@ rhSSALT <- function(n, censoring = 1, tau, r = NULL, monitoring = "continuous", 
     warning("Invalid argument 'monitoring'! monitoring is 'continuous' or 'interval'. 
             monitoring = 'continuous' is used instead")
   }
-  ######The following check is newly added.
+  ######Checks for conflicts in censoring, monitoring, and delta
   if ((monitoring == "continuous") + (!is.null(delta))  == 2){
     warning("Conflict in argument 'monitoring' and delta'! monitoring = 'continuous' is used instead")
   }

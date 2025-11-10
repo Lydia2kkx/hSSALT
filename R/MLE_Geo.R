@@ -1,14 +1,11 @@
 MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, language){
 
-  # All Type I censoring
-
   ############################################################################
   ############# Part 1 first stress level
   ############################################################################
 
   ### q1 is the number of intervals under the first stress level
   q1 <- tau[1]/delta
-
 
   ### Count the number in each interval
   n1j <- data[1:q1]
@@ -24,7 +21,6 @@ MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, languag
     tau1j0 <- tau1j - delta
 
     ### Compute mle1
-    ### Find the unique solution (it is proved to be unique) with uniroot function
     mle1 <- uniroot(func_theta1_int, c(1, 1000), n1j = n1j, n1 = n1, n = n, 
                     tau1 = tau[1], tau1j=tau1j, tau1j0=tau1j0)$root
   }
@@ -38,8 +34,8 @@ MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, languag
 
   j <- 1:q2
 
-  n2j <- data[(q1+1):(q1+q2)] #Avner: Now works even if the inputted data is the full data (where the previous version failed)
-  if(q1+q2 > length(data)){n2j[(length(data)-q1+1):q2] <- 0} #Avner: If the inputted data does not cover all of n2 then fill with zeros
+  n2j <- data[(q1+1):(q1+q2)]
+  if(q1+q2 > length(data)){n2j[(length(data)-q1+1):q2] <- 0}
   n2 <- sum(n2j)
   
   data_starts <- rep(j-1, n2j)
@@ -70,8 +66,6 @@ MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, languag
   }
   
   if (dim(parameter_starts)[1]==1){
-    # Remove index (unnecessary for one setup of parameters)
-    # EM_mle$ind <-NULL
     EM_mle$results$ind <-NULL
     
     if (!is.na(EM_mle$results$theta22) && !is.na(mle1) && mle1 < EM_mle$results$theta22) {
@@ -80,8 +74,6 @@ MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, languag
       warning("Mean lifetime in first stress level must be greater than mean lifetimes in the second stress level.") 
     }
     
-    #Yao: added check theta21 = 0.
-    #Yao: I think all these checks can be removed in the end to check only once. This change will be done later.
     if (EM_mle$results$theta21 == 0) {
       warning("The group with the smaller mean lifetime at the second stress level is estimated to be 0") 
     }
@@ -105,21 +97,24 @@ MLE_Geo<- function(data, n, tau, delta, theta21, theta22, p, maxit, tol, languag
     }
     
     mle_em <- find_max(Estimate_df)
-    # Check whether EM algorithm converged
+    
+    ###Check whether EM algorithm converged
     if (nrow(mle_em)>0 && !is.na(mle1)) {
       posterior_l <- EM_mle[[as.numeric(rownames(Estimate_df[which.max(Estimate_df$loglik),]))]]$posterior
-      # Check whether mle1 > theta 22
+      
+      ###Check whether mle1 > theta 22
       if (mle1 < mle_em$theta22) {
         mle1 = NA
         mle_em$theta22 = NA
         warning("Mean lifetime in first stress level must be greater than mean lifetimes in the second stress level.")  
       }
+      
     } else {
       posterior_l <- NA
     }
     mle <- cbind(mle_em[,1:2],theta1=mle1,mle_em[,3:4])
     
-    #Check homogeneity
+    ###Check homogeneity
     if (!is.na(mle$theta22)) {
       info <- ifelse(mle$theta22/mle$theta21 < 1.05, "homogeneous", "heterogeneous")
     } else {

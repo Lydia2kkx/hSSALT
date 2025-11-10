@@ -19,21 +19,18 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
   ############# Part 2 second stress level
   ############################################################################
   
-
-  # retrieves same result for censored and uncensored data
-  
   n_c <- length(data)
   
   if (censoring == 1){
     n2 <- length(T2[T2 <= tau[2]])
     
-    if (n > n_c){  #censored data
+    if (n > n_c){
       t22 <- c(T2, rep(tau[2], n-n_c))
       d <- 1*(t22 < tau[2])
-    }else{       #uncensored data
-      d <- 1*(T2 < tau[2])              # r = tau2
-      t22 <- T2 # observed or censored data
-      t22[which(t22 >= tau[2])] = tau[2] #set data after censoring tau2 to tau 2
+    }else{
+      d <- 1*(T2 < tau[2])
+      t22 <- T2
+      t22[which(t22 >= tau[2])] = tau[2]
     }
   }
   
@@ -45,8 +42,8 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
       t22 <- c(T2, rep(cs, n-n_c))
       d <- c(rep(1, n_c-n1), rep(0, n-n_c))
     }else{
-      d <- 1*(T2 <= cs)              # censoring indicator
-      t22 <- apply(cbind(T2, cs), 1, min) # observed or censored data
+      d <- 1*(T2 <= cs)
+      t22 <- apply(cbind(T2, cs), 1, min)
     }
   }
   
@@ -54,9 +51,6 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
     warning("At least 3 observations in the second stress level are needed. The number of observations cannot perform an EM algorithm in a proper way.")
   }
  
-  # supports both vectors and numeric values for p, theta21, theta22
-  # parameter_starts <- expand.grid(p, theta21, theta22)
-  # colnames(parameter_starts) <- c("omega1", "theta21", "theta22")
   parameter_starts <- data.frame(omega1 = p, theta21 = theta21, theta22 = theta22)
 
   if(language == "CPP") {
@@ -80,18 +74,16 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
   }
   
   if (dim(parameter_starts)[1]==1){
-    # Remove index (unnecessary for one setup of parameters)
-    # EM_mle$ind <-NULL
     EM_mle$results$ind <- NULL
     
-    # check whether has converged and mle1 > theta22
+    ###Check whether has converged and mle1 > theta22
     if (!is.na(EM_mle$results$theta22) && !is.na(mle1) && mle1 < EM_mle$results$theta22) {
       mle1 = NA
       EM_mle$results$theta22 = NA
       warning("Mean lifetime in first stress level must be greater than mean lifetimes in the second stress level.") 
     }
     
-    #Check homogeneity
+    ###Check homogeneity
     if (!is.na(EM_mle$results$theta22)) {
       info <- ifelse(EM_mle$results$theta22/EM_mle$results$theta21 < 1.05, "homogeneous", "heterogeneous")
     } else {
@@ -111,20 +103,22 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
     
     mle_em <- find_max(Estimate_df)
     
-    # Check whether EM algorithm converged
+    ###Check whether EM algorithm converged
     if (nrow(mle_em)>0 && !is.na(mle1)) {
       posterior_l <- EM_mle[[as.numeric(rownames(Estimate_df[which.max(Estimate_df$loglik),]))]]$posterior
-      # Check whether mle1 > theta 22
+      
+      ###Check whether mle1 > theta 22
       if (mle1 < mle_em$theta22) {
         mle1 = NA
         mle_em$theta22 = NA
         warning("Mean lifetime in first stress level must be greater than mean lifetimes in the second stress level.")  
       }
+      
     } else {
       posterior_l <- NA
     }
     
-    #Check homogeneity
+    ###Check homogeneity
     if (!is.na(mle_em$theta22)) {
       if (mle_em$theta22/mle_em$theta21 < 1.05) {
         warning("The dataset appears homogeneous!")
@@ -133,7 +127,7 @@ MLE_Exp <- function(data, n, censoring, tau, r, theta21, theta22, p, maxit, tol,
     
     mle <- cbind(mle_em[, 1:2], theta1 = mle1, mle_em[, 3:4])
     
-    #Check homogeneity
+    ###Check homogeneity
     if (!is.na(mle$theta22)) {
       info <- ifelse(mle$theta22/mle$theta21 < 1.05, "homogeneous", "heterogeneous")
     } else {

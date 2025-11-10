@@ -62,15 +62,16 @@ HomohSSALT <- function(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 
       }
     }
   }
-  
+  ###Check the input of parameter alpha
   if (length(alpha) != 1 || !is.numeric(alpha) || alpha > 1 || alpha < 0) {
     stop("Invalid argument 'alpha'! The value of 'alpha' should be a in range (0,1)")
-  }  
+  }
+  ###Check the input of parameter M
   if (length(M) != 1 || !is.numeric(M) || M != as.integer(M) || M < 0) {
     stop("Invalid argument 'M'! The value of 'M' should be a positive integer")
   }
   
-  ###Check input of setSEED and seed
+  ###Check input of parameters setSEED and seed
   if (!is.logical(setSEED) || length(setSEED) != 1) {
     stop("Invalid argument 'setSEED'! The value of 'setSEED' must be either TRUE or FALSE")
   }
@@ -92,17 +93,16 @@ HomohSSALT <- function(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 
   ############# Part 2 second stress level
   ############################################################################
   
-  # retrieves same result for censored and uncensored data
   n_c <- length(data)
   if(censoring == 1){
     n2 <- length(T2[T2 <= tau[2]])
-    if (n > n_c){  #censored data
+    if (n > n_c){
       t22 <- c(T2, rep(tau[2], n - n_c))
       d <- 1*(t22 < tau[2])
-    }else{       #uncensored data
-      d <- 1*(T2 < tau[2])              # r = tau2
-      t22 <- T2 # observed or censored data
-      t22[which(t22 >= tau[2])] = tau[2] #set data after censoring tau2 to tau 2
+    }else{
+      d <- 1*(T2 < tau[2])
+      t22 <- T2
+      t22[which(t22 >= tau[2])] = tau[2]
     }
   }
   
@@ -113,8 +113,8 @@ HomohSSALT <- function(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 
       t22 <- c(T2, rep(cs, n - n_c))
       d <- c(rep(1, n_c - n1), rep(0, n - n_c))
     }else{
-      d <- 1*(T2 <= cs)              # censoring indicator
-      t22 <- apply(cbind(T2, cs), 1, min) # observed or censored data
+      d <- 1*(T2 <= cs)
+      t22 <- apply(cbind(T2, cs), 1, min)
     }
   }
   
@@ -167,12 +167,8 @@ HomohSSALT <- function(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 
   CV_data <- quantile(CVs, probs = 1 - alpha)[[1]]
   
   ##########Check if test statistic is too close to the critical value
-  #Avner: Added 'closeness_warning' just for testing. To be removed later.
   if (abs(TS - CV_data) / abs(CV_data) < 0.05) {
     warning("Test statistic is close to the critical value. Consider increasing 'M' for greater accuracy.")
-    closeness_warning <- TRUE
-  } else {
-    closeness_warning <- FALSE
   }
   
   ##########Decision
@@ -188,9 +184,7 @@ HomohSSALT <- function(data, n, censoring = 1, tau, r = NULL, alpha = 0.05, M = 
     alternative = "Data are heterogeneous under second stress level",
     method = "Homogeneity Test for hSSALT",
     data.name = "Second stress level data",
-    decision = decision,
-    #Avner: See above regarding 'closeness_warning'
-    closeness_warning = closeness_warning
+    decision = decision
   )
   
   class(result) <- "hSSALTtest"

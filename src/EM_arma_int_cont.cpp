@@ -11,7 +11,6 @@ using namespace arma;
 
 arma::vec dexp_boost(arma::vec x, double p) {
   boost::math::exponential dist(p);
-  //boost::math::geometric_distribution<double> dist(p); // should work as well
   int n = x.size();
   arma::vec res(n);
   for (int i = 0; i < n; ++i) {
@@ -23,7 +22,6 @@ arma::vec dexp_boost(arma::vec x, double p) {
 
 arma::vec pexp_boost(arma::vec x, double p) {
   boost::math::exponential dist(p);
-  //boost::math::geometric_distribution<double> dist(p); // should work as well
   int n = x.size();
   arma::vec res(n);
   for (int i = 0; i < n; ++i) {
@@ -32,39 +30,16 @@ arma::vec pexp_boost(arma::vec x, double p) {
   return res;
 }
 
-// arma::vec mylog_cpp(arma::vec x) {
-//   double small_offset = 1e-10;
-//   int n = x.size();
-//   arma::vec res(n);
-//   for (int i = 0; i < n; ++i) {
-//     if(x[i] <= 1e-10){
-//       res[i] = log(x[i] + small_offset);
-//     }else{
-//       res[i] = log(x[i]);
-//     }
-//   }
-//   return res;
-// }
-
-// arma::vec mylog_cpp(const arma::vec& x) {
-//   const double small_offset = 1e-10;
-//   return arma::log(arma::clamp(x, small_offset, arma::datum::inf) + small_offset);
-// }
-
 
 double mysum_cpp(arma::vec v ) {
-  
-  
+
   double s = 0;
-  
   int n = v.size();
   
   for (int i=0; i < n; i++) {
-    // Guard against non-finite values
     if(is_finite(v[i])){
       s +=  v[i];
     }
-    
   }
   return(s);
 }
@@ -72,7 +47,6 @@ double mysum_cpp(arma::vec v ) {
 
 arma::vec dgeom_boost(arma::vec x, double p) {
   boost::math::geometric dist(p);
-  //boost::math::geometric_distribution<double> dist(p); // should work as well
   int n = x.size();
   arma::vec res(n);
   for (int i = 0; i < n; ++i) {
@@ -84,7 +58,6 @@ arma::vec dgeom_boost(arma::vec x, double p) {
 
 arma::vec pgeom_boost(arma::vec x, double p) {
   boost::math::geometric dist(p);
-  //boost::math::geometric_distribution<double> dist(p); // should work as well
   int n = x.size();
   arma::vec res(n);
   for (int i = 0; i < n; ++i) {
@@ -92,7 +65,6 @@ arma::vec pgeom_boost(arma::vec x, double p) {
   }
   return res;
 }
-
 
 
 // [[Rcpp::export]]
@@ -157,7 +129,7 @@ List EM_algorithm_censored_arma(arma::vec data, double ind, arma::vec d, DataFra
   
   std::string message;
   arma::mat posterior;
-  // Avner: Changed from k<=N because of differences in lists in C++ and R. Previously never went into the 'else' part
+
   if(k <= (N-1)){
     message = "convergent";
     posterior.set_size(data.n_elem, 2);
@@ -192,18 +164,6 @@ List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::
   double p2 = 1 - exp(-delta/thirdcol[(ind-1)]);
   
   DataFrame results;
-  //Avner: Removed Flag variable. Isn't necessary and causes warning when running devtools::check()
-  //bool Flag = false;
-  
-  // std::cout << "outside\n";
-  // 
-  // std::cout << "omega1 " << omega1 << "\n";
-  // std::cout << "omega2 " << omega2<< "\n";
-  // 
-  // std::cout << "p1 " << p1 << "\n";
-  // std::cout << "p2 " << p2 << "\n";
-  
-  
   
   arma::vec loglik(N);
   loglik[0] = 0;
@@ -233,7 +193,7 @@ List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::
     p2 = mysum_cpp(tau2%d)/mysum_cpp(tau2%(d%(data+1) + (1-d) * q2));
     
     if (std::abs(p1 - 1) < 1e-128 || std::abs(p2 - 1) < 1e-128) {
-      // std::cout << "Warning: p1 reached 1. Exiting EM algorithm early." << std::endl;
+
       double p_helper = omega1;
       if(p1 <= p2){
         double theta21 = 0;
@@ -242,7 +202,7 @@ List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::
         double omega2 = p_helper;
         results = DataFrame::create(Named("p1") = omega1, Named("p2") = omega2, Named("theta21") = theta21, Named("theta22") = theta22,
                                          Named("loglik") = loglik[k-1], Named("iteration") = k, Named("message") = "p1 reached 1");
-        //Avner: For now
+        
         arma::mat posterior;
         posterior.set_size(0,0);
         return List::create(
@@ -254,7 +214,6 @@ List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::
         double theta22 = -delta/std::log(1 - p2);
         results = DataFrame::create(Named("p1") = omega1, Named("p2") = omega2, Named("theta21") = theta21, Named("theta22") = theta22,
                                          Named("loglik") = loglik[k-1], Named("iteration") = k, Named("message") = "p1 reached 1");
-        //Avner: For now
         arma::mat posterior;
         posterior.set_size(0,0);
         return List::create(
@@ -262,8 +221,6 @@ List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::
           _["posterior"] = posterior
         );
       }
-      //Flag = true;
-      break;
     }
     
     loglik[k+1]=mysum_cpp(tau1%(log(omega1)+d%arma::log(dgeom_boost(data, p1)) + (1-d)%arma::log(1-pgeom_boost(data, p1))))+ 
@@ -272,8 +229,6 @@ List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::
     k++;
   }
   
-  //Avner: The if-Flag part causes a warning when creating the R package. It isn't necessary logically so removed
-  //if (!Flag) {
   double p_helper = omega1;
   double theta21, theta22;
   if(p1 <= p2){
@@ -305,8 +260,5 @@ List EM_algorithm_interval_arma(arma::vec data, double delta, double ind, arma::
     _["results"] = results,
     _["posterior"] = posterior
   );
-
-  //Avner: Commenting the Flag closing bracket  
-  //}
   
 }

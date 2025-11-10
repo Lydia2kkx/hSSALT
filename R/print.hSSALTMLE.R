@@ -15,6 +15,5 @@ print.hSSALTMLE <- function(x, ...) {
   print(ests, quote = FALSE)
   cat("\n")
   
-  # To be able to capture list in variable with print
   invisible(x)
 }

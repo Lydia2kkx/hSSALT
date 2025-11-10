@@ -2,7 +2,6 @@
 CIbs_hSSALT <-function(data, n, censoring, tau , r, monitoring, delta, alpha, B, theta1, theta21,
                        theta22, p, maxit, tol, language){
 
-  #Yao: please check: Does the order of the arguments cause issues?  
   bootstrap_distri_list <- bootstrap_distribution(data, n, monitoring = monitoring, theta1 = theta1,
                                              theta21 = theta21, theta22 = theta22, p = p, 
                                              censoring, tau, r, B, delta = delta, maxit, tol, 
@@ -25,7 +24,7 @@ CIbs_hSSALT <-function(data, n, censoring, tau , r, monitoring, delta, alpha, B,
   p_low <- quantile(bootstrap_distri$p1, alpha/2)[[1]]
   p_up <- quantile(bootstrap_distri$p1, 1-alpha/2)[[1]]
   
-  #Confidence Intervals
+  ###Confidence Intervals
   theta1_CI <- c(theta1_low, theta1_up)
   theta21_CI <- c(theta21_low, theta21_up)
   theta22_CI <- c(theta22_low, theta22_up)

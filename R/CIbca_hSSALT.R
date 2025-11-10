@@ -9,9 +9,6 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
   bootstrap_distri <- bootstrap_distri_list[[1]]
   num_of_iterations <- bootstrap_distri_list[[2]]
 
-  ### alpha is the significant level, take theta1 as an example
-  # quantile(bootstrap_distri$theta1, c(alpha/2, 1-alpha/2))
-
   ############Boostrap BCa CIs
   ### Compute the bias correction
   ### order the bootstrap estimates
@@ -28,30 +25,17 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
   ### BCa method is computed based on the sample data
   ### Compute the acceleration ai
   ####Calculation of a1
-  ### T1 is the failures under the first stress level (simulated or real ??)
-  ### Again, take Type-I as an example
   
   parameter_starts <- data.frame(omega1=p, theta21=theta21, theta22=theta22)
   
   if (monitoring == "continuous") {
-    #Yao: This makes the following assignment simpler. 
     if(censoring==2){
       tau <- c(tau[1], data[r])
     }
     T1 <- data[data<tau[1]]
     n1 <- length(T1)
-    T2 <- data[data>=tau[1]] #Avner: Only correct if data is censored, no? #Yao: Correct.  
-    #Yao: add the next few lines
-    #Avner: This line below, without the if-else, works always (I think), because tau[2] should always exist.
-    #       Because in Type-2 you always should have at least r observations and in Type-I it is just pre-specified
-    #       Any edge cases (less than r observations etc) should probably be checked in the main function checks and not here.
+    T2 <- data[data>=tau[1]]  
     t22 <- T2[T2<=tau[2]]
-    # if(length(data) == n){
-    #   t22 <- T2[T2<=tau[2]] #Avner: I'm not sure why the if-else is necessary. I think it's fine to just run this line without the if-else (so in all cases; censored/uncensored).
-    #                         #But probably correct as is, unless somehow the sample is weirdly censored or n is incorrectly given or I don't know.
-    # }else{
-    #   t22 <- T2
-    # }
     n2 <- length(t22)
     
     mle1ij <- c()
@@ -66,49 +50,17 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
     a1 <- sum((mle1i - mle1ij)^3) / (6 * (sum((mle1i - mle1ij)^2))^1.5)
     
     #########################################################################################
-    # This section needs rework
     
     ####Calculation of a2s
     ### T2 is the failures under the second stress level
     Re <- list()
-    for (i in 1 : n2) { #Yao: I changed (length(T2) - (n-n1-n2)) into n2, since the original one
-                        #is length(T2_combine), which includes also the censored items. Thus, we
-                        #need length(T2) - (n-n1-n2) for the number of observed failure under the 
-                        #second stress level.
+    for (i in 1 : n2) {
       T2_new <- t22[-i]  
-      d <- c(1*(T2_new <= tau[2]), rep(0, n-n1-n2)) #Yao: I also add the censored part here
-      #d <- c(1*(T2_new <= tau[2]))
-      t22_new <- apply(cbind(T2_new, tau[2]), 1, min) # observed or censored data
-      
-      # #Avner: Type-2 adapted from MLE_Exp.R
-      # #Yao: Your change is also correct for type 2, but not for type 1 with full data. So I made the
-      # change above.  
-      # n_c <- length(data)
-      # if (censoring == 2){
-      #   #n2 <- r-n1
-      #   cs <- T2_new[r-n1]
-      #   
-      #   if (n>n_c){
-      #     t22_new <- c(T2_new, rep(cs, n-n_c))
-      #     d <- c(rep(1, n_c-n1), rep(0, n-n_c))
-      #   }else{
-      #     d <- 1*(T2_new <= cs)              # censoring indicator
-      #     t22_new <- apply(cbind(T2_new, cs), 1, min) # observed or censored data
-      #   }
-      # }
+      d <- c(1*(T2_new <= tau[2]), rep(0, n-n1-n2))
+      t22_new <- apply(cbind(T2_new, tau[2]), 1, min)
 
-      #Avner: For testing I changed it to CPP-Testing to just skip and go straight to the R function. Fixes a lot of problems so I suggest to remove this
-      #Yao: Change back to "CPP"?
-      #Avner: I'd suggest just removing the if language part and using R regardless of language variable. Otherwise there are discrepancies between the intervals using R or CPP
-      #Yao: Ok.
-      if(language == "CPP-Testing"){
-          model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_censored_arma, data = t22_new - tau[1], d=d[1:(length(d)-n+n1+n2)], N=maxit, #Avner: For d=d had to change to match with the size of the data variable. Should probably be done for parallel=TRUE as well
+      model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_censored, data = t22_new - tau[1], d=d, N=maxit,
                                    parameter_starts = parameter_starts, tol = tol))
-      }else{
-          model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_censored, data = t22_new - tau[1], d=d, N=maxit,
-                                   parameter_starts = parameter_starts, tol = tol)) #Avner: There were some warnings here too.
-        
-      }
       
       Estimate_df_new <- data.frame(matrix(nrow = length(model_list_new), ncol = 7))
       
@@ -141,14 +93,6 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
     ### q2 is the number of intervals under the second stress level
     q2 <- (tau[2]-tau[1])/delta
     
-    # if (n > sum(data)) { #data is censored with a tau2 that is smaller than the input tau2
-    #   n2j <- data[-(1:q1)] # censored
-    #   if(q2 > length(n2j)){n2j <- c(n2j, rep(0, q2-length(n2j)))} #Yao: Why this line? 
-    # }else{n2j <- data[(q1+1):(q1+q2)]} #Yao: I changed this line, since the previous version
-    # #n2j <- data[-c((1:q1),((q1+q2+1):length(data)))] is wrong. If all failures are observed before tau2,
-    # #then q1+q2 = n, q1+q2+1 = n+1. (same as in MLE_Geo.R)
-    
-    #Avner: My version of above code. Should work with full data. - Changed after testing 20250901
     n2j <- data[(q1+1):(q1+q2)]
     if(q1+q2 > length(data)){n2j[(length(data)-q1+1):q2] <- 0}
     n2 <- sum(n2j)
@@ -171,7 +115,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
     
     mle1ij <- c()
     for (i in 1 : n1) {
-      n1j.jk <- jackknife1[[i]] #Avner: Previously n1j, avoids having to define n1j again - After testing 20250901
+      n1j.jk <- jackknife1[[i]]
       tau1j <- seq(delta, tau[1], delta)
       tau1j0 <- tau1j - delta
       mle_1new <- uniroot(func_theta1_int, c(1, 1000), extendInt = "yes", n = n, n1j = n1j.jk, n1 = n1-1, tau1 = tau[1],tau1j0 = tau1j0, tau1j = tau1j)$root
@@ -190,22 +134,8 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
       d <- c(1*(T2_new < tau[2]), rep(0, n-n1-n2))
       data_new <- c(rep((1:q2)-1, n2j), rep(q2, max(0,n-1-n1-sum(d))))
       
-      #Avner: Make length of d match length of data - pretty clunky
-      if (length(d)<length(data_new)) {
-        d[(length(d)+1):length(data_new)] <- 0
-      } else {
-        d <- d[1:length(data_new)]
-      }
-      
-      #Avner: Added the if language CPP based on the continuous part.
-      if(language == "CPP"){
-          model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_interval_arma, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
-                                                    parameter_starts = parameter_starts, tol = tol))
-      }else{
-          model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_interval, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
-                                                                             parameter_starts = parameter_starts, tol = tol))
-
-      }
+      model_list_new <- suppressWarnings(lapply(1:nrow(parameter_starts), EM_algorithm_interval, data = data_new, delta = delta, q2 = q2, d=d, N=maxit,
+                                                                        parameter_starts = parameter_starts, tol = tol))
       
       Estimate_df_new <- data.frame(matrix(nrow = length(model_list_new), ncol = 7))
       
@@ -221,11 +151,6 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
 
   #########################################################################################
 
-  ### Again here, if the initial values are vectors, use find_max
-  ### Otherwise, simply skip
-  #stab_re <- lapply(Re, check_stability)
-  #stab_re_df <- do.call("rbind.data.frame", stab_re)
-  #max_loglik_re <- lapply(Re, find_max)
   max_loglik_re_df <- do.call("rbind.data.frame", Re)
   
   colnames(max_loglik_re_df) <- colnames(model_list_new[[1]]$results)
@@ -260,7 +185,6 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
   alpha222 <- pnorm(z022 + (z022 + qnorm(1 - alpha/2)) / (1 - a22 * (z022 + qnorm(1 - alpha/2))))
 
   ##################Calculate the lower and upper bound
-  #### Compare to 0 and 1 (for p)!
   theta1_low <- theta1_bootstrap_ordered[ifelse(length(as.integer(alpha11 * B) == 0), 1, as.integer(alpha11 * B))]
   theta1_up <- theta1_bootstrap_ordered[ifelse(is.nan(alpha21 * B), B, as.integer(alpha21 * B))]
   
@@ -275,7 +199,7 @@ CIbca_hSSALT<- function(data, n, censoring, tau, r, monitoring, delta, alpha, B,
   theta22_low <- theta22_bootstrap_ordered[ifelse(length(as.integer(alpha122 * B) == 0), 1, as.integer(alpha122 * B))]
   theta22_up <- theta22_bootstrap_ordered[ifelse(is.nan(alpha222 * B), B, as.integer(alpha222 * B))]
 
-  #Confidence Intervals
+  ###Confidence Intervals
   theta1_CI <- c(theta1_low,theta1_up)
   theta21_CI <- c(theta21_low,theta21_up)
   theta22_CI <- c(theta22_low,theta22_up)
