@@ -3,6 +3,7 @@
 #include <RcppArmadillo.h>
 #include <boost/math/distributions/exponential.hpp>
 #include <boost/math/distributions/geometric.hpp>
+#include <cmath>
 
 using namespace Rcpp;
 using namespace arma;
@@ -37,7 +38,7 @@ double mysum_cpp(arma::vec v ) {
   int n = v.size();
   
   for (int i=0; i < n; i++) {
-    if(is_finite(v[i])){
+    if(std::isfinite(v[i])){
       s +=  v[i];
     }
   }
