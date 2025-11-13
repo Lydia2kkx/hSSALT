@@ -1,7 +1,10 @@
+# hSSALT
+
 <!-- badges: start -->
   [![R-CMD-check](https://github.com/Lydia2kkx/hSSALT/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Lydia2kkx/hSSALT/actions/workflows/R-CMD-check.yaml)
-  <!-- badges: end -->
-# hSSALT
+[![R-CMD-check](https://github.com/Lydia2kkx/hSSALT/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Lydia2kkx/hSSALT/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
 hSSALT Rpackage: Analyze a simple heterogeneous SSALT model with exponential lifetime distributions.
 
 ## Installation
