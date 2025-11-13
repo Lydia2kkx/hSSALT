@@ -2,7 +2,9 @@
 hSSALT Rpackage: Analyze a simple heterogeneous SSALT model with exponential lifetime distributions.
 
 ## Installation
+```r
 install.packages("hSSALT")
+```
 
 ## Example
 ```r
