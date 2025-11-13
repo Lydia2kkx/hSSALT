@@ -5,6 +5,7 @@ hSSALT Rpackage: Analyze a simple heterogeneous SSALT model with exponential lif
 install.packages("hSSALT")
 
 ## Example
+```r
 library(hSSALT)
 data(hSSALTdata) 
 mle <- MLEhSSALT(data = hSSALTdata$data, n = 35, censoring = 1, tau = c(8, 20), theta21 = 1, theta22 = 8, p = 0.4) 
