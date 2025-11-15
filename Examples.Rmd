@@ -1,0 +1,64 @@
+---
+title: "hSSALT Examples"
+author: "Yao Lu"
+date: "2025-11-15"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(hSSALT)
+##Dataset
+hSSALTdata
+
+##Example 1: hSSALT for Type-II censoring
+##Randomly generate an hSSALT dataset
+n <- 35
+tau <- 8
+theta1 <- exp(3.5)
+theta21 <- exp(-0.2)
+theta22 <- exp(2)
+p <- 0.4
+r <- 30
+set.seed(2)
+sample <- rhSSALT(n, 2, r = r, tau = tau, theta1 = theta1, theta21 = theta21, 
+                  theta22 = theta22, p = p, monitoring = "continuous")
+sample
+
+##Compute MLE
+resMLE <- MLEhSSALT(sample$Censored_dat, n, 2, r = r, tau = tau, theta21 = theta21, 
+                    theta22 = theta22, p = p,language = "R", monitoring = "continuous")
+resMLE
+
+##Compute BCa CI
+CI_cpp <- CIhSSALT(sample$Censored_dat, n, 2, r = r, tau = tau, MLEhSSALT_Obj = resMLE, 
+                   language = "CPP", monitoring = "continuous", CImethod = "bca")
+CI_cpp
+
+##Homogeneity test
+homotest <- HomohSSALT(data = sample$Censored_dat, n = n, 2, r = r, tau = tau)
+homotest
+
+##Example 2: hSSALT for Interval monitoring
+##Randomly generate an hSSALT dataset for interval monitoring
+set.seed(2)
+tau_int <- c(8, 20)
+delta <- 0.5
+sample_int <- rhSSALT(n, 1, tau = tau_int, theta1 = theta1, theta21 = theta21, 
+                      theta22 = theta22, p = p, monitoring = "interval", delta = delta)
+sample_int
+
+##Compute MLE
+resMLE_int <- MLEhSSALT(sample_int$Censored_dat, n, 1, tau = tau_int, theta21 = theta21, 
+                        theta22 = theta22, p = p, monitoring = "interval", delta = delta)
+resMLE_int
+
+##Compute BCa CI
+CI_int <- CIhSSALT(sample_int$Censored_dat, n, 1, tau = tau_int, MLEhSSALT_Obj = resMLE_int,
+                   language = "CPP", monitoring = "interval", delta = delta, CImethod = "bca")
+CI_int
+```
+
